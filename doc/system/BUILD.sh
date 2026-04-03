@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+
+PARTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$PARTS_DIR/../.." && pwd)"
+OUTPUT="$REPO_ROOT/SYSTEM.md"
+TMP_OUTPUT="$(mktemp)"
+
+echo "Assembling SYSTEM.md..."
+
+cat "$PARTS_DIR/_index.md" > "$TMP_OUTPUT"
+
+for part in "$PARTS_DIR"/[0-9][0-9]-*.md; do
+  echo "" >> "$TMP_OUTPUT"
+  echo "---" >> "$TMP_OUTPUT"
+  echo "" >> "$TMP_OUTPUT"
+  cat "$part" >> "$TMP_OUTPUT"
+done
+
+cp "$TMP_OUTPUT" "$OUTPUT"
+chmod 664 "$OUTPUT"
+LINE_COUNT=$(wc -l < "$OUTPUT")
+rm -f "$TMP_OUTPUT"
+echo "SYSTEM.md assembled: $LINE_COUNT lines"
