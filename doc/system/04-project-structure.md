@@ -7,15 +7,20 @@ It reflects a contract-first bootstrap rather than a full service implementation
 
 ```text
 forgeHQ/
+├── AGENTS.md
 ├── FORGEHQ_COMPREHENSIVE_TEST_PLAN.md
 ├── app/
 │   ├── domain/
 │   │   ├── artifacts/
 │   │   ├── pipeline/
 │   │   ├── reviewability/
+│   │   ├── signals/
 │   │   └── workers/
 │   ├── orchestration/
-│   └── schemas/
+│   ├── persistence/
+│   ├── read_models/
+│   ├── schemas/
+│   └── services/
 ├── doc/
 │   └── system/
 ├── docs/
@@ -28,6 +33,7 @@ forgeHQ/
 ├── tests/
 │   ├── contract/
 │   ├── pipeline/
+│   ├── read_models/
 │   └── workers/
 ├── CLAUDE.md
 ├── SYSTEM.md

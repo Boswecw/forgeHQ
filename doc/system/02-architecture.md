@@ -1,10 +1,11 @@
 ## 2. Architecture
 
-The current implementation is a contract-first Python repository.
-It still does not expose an application runtime,
-but it now includes a no-op shaping-run scaffold that can progress through all stages with placeholder artifacts.
-Repo architecture is centered on bounded domain contracts, typed schema stubs,
-strict stage routing, and a documentation assembly surface.
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The current implementation is a contract-first Python repository with a full
+Phases 0–6 service layer. It does not yet expose an HTTP API or UI runtime,
+but all backbone pipeline services, in-memory persistence stubs, and
+ForgeCommand read models are implemented and tested.
 
 ### 2.1 Current Implemented Shape
 
@@ -13,9 +14,13 @@ forgeHQ/
   app/domain/artifacts/
   app/domain/pipeline/
   app/domain/reviewability/
+  app/domain/signals/
   app/domain/workers/
   app/schemas/
   app/orchestration/
+  app/services/
+  app/persistence/
+  app/read_models/
   docs/architecture/
   docs/contracts/
   doc/system/
@@ -29,20 +34,25 @@ forgeHQ/
 ForgeEval / ForgeMath
         |
         v
-   forgeHQ contracts
+   forgeHQ service layer
+   (SignalIntake → Ranking → ContextBundle → Design → Generation
+    → Falsification → Verification → Packaging → ReadModels)
         |
         v
-DataForge / ForgeCommand
+DataForge (persistence — wiring pending)
+        |
+        v
+ForgeCommand (read models implemented; API surface pending)
 ```
 
 ### 2.3 Architectural Posture
 
 | Concern | Current posture |
 | --- | --- |
-| Upstream authority | Declared boundary only |
-| Runtime orchestration | Implemented as a no-op stage scaffold only |
-| Persistence boundary | Declared boundary only |
-| Operator review surface | Declared boundary only |
+| Upstream authority | Declared boundary; signal authority classification implemented |
+| Runtime orchestration | No-op scaffold + live service layer (Phases 2–6) |
+| Persistence boundary | In-memory stubs implemented; DataForge wiring pending |
+| Operator review surface | Read models implemented (`ProposalQueueItem`, `ProposalDetailModel`); API pending |
 | Repo documentation truth | Implemented via `doc/system/` and `SYSTEM.md` |
 
 ### 2.4 Hard Architectural Laws

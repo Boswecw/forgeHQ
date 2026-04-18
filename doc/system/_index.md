@@ -3,7 +3,7 @@
 > Bounded proposal-generation and confidence-shaping subsystem for the BDS ecosystem.
 > "Reviewable candidates without counterfeit authority."
 
-**Document version:** 1.2 (2026-04-03) — Phase 1 scaffold plus QA foundation
+**Document version:** 1.5 (2026-04-04) — Phase 6: ForgeCommand read models and read model service
 
 ---
 

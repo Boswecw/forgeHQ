@@ -74,3 +74,19 @@ def contains_non_authoritative_language(text: str) -> bool:
 def contains_prohibited_authoritative_language(text: str) -> bool:
     lowered = text.casefold()
     return any(token.value in lowered for token in ProhibitedLanguageToken)
+
+
+class ChallengePosture(StrEnum):
+    """Outcome posture from the Critic/Falsifier lane."""
+
+    PASSED = "passed"       # No contradictions, duplicates, or shallow gain detected.
+    DOWNGRADED = "downgraded"  # Issues found — proposal demoted but not failed.
+    FAILED = "failed"       # Critical failure — proposal not reviewable without rework.
+
+
+class VerificationPosture(StrEnum):
+    """Outcome posture from the Verifier lane."""
+
+    WEAK = "weak"     # Residual weaknesses exceed observed gains.
+    MIXED = "mixed"   # Observed gains and residual weaknesses are balanced.
+    STRONG = "strong"  # Observed gains exceed residual weaknesses.

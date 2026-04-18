@@ -1,8 +1,11 @@
 ## 16. Testing Infrastructure
 
-The current repo now includes a QA protocol foundation sized to actual maturity.
-forgeHQ remains a contract/bootstrap repo with a Phase 1 scaffold,
-so testing is centered on T0 pre-flight, T1 contract coverage, and limited T6 tooling checks.
+*Last updated: 2026-04-04 (Phases 2–6 test suites added)*
+
+The current repo implements Phases 0–6, so the test suite now spans contract
+coverage, full pipeline service tests, and ForgeCommand read model tests.
+T0 pre-flight and T1 contract coverage remain the required gate; T3–T8 are
+not yet applicable because no HTTP API or UI surface exists.
 
 ### 16.1 QA Foundation Artifacts
 
@@ -28,6 +31,15 @@ so testing is centered on T0 pre-flight, T1 contract coverage, and limited T6 to
 | `tests/pipeline/test_stage_progression.py` | valid no-op stage progression and skip rejection |
 | `tests/pipeline/test_design_required_before_generation.py` | candidate-generation block when design is missing |
 | `tests/pipeline/test_reviewability_requires_challenge_and_verification.py` | packaging blocks when falsification or verification are missing |
+| `tests/pipeline/test_signal_intake_service.py` | admissibility classification, source-ref preservation, fail-closed on unknown schemes, non-authoritative posture |
+| `tests/pipeline/test_target_ranking_service.py` | fail-closed on placeholder snapshot, composite score computation, deterministic 2× weighting, ranking trace explainability |
+| `tests/pipeline/test_context_bundle_service.py` | scope policy enforcement, target_id consistency, duplicate ref rejection, non-authoritative posture |
+| `tests/pipeline/test_candidate_design_service.py` | fail-closed on placeholder bundle, empty required fields, scope locking from bundle, non-authoritative posture |
+| `tests/pipeline/test_candidate_generation_service.py` | design-before-generation enforcement, scope adherence, target_id consistency, non-authoritative posture |
+| `tests/pipeline/test_falsification_service.py` | fail-closed on placeholders and missing evaluated checks, downgrade logic, critic lane independence |
+| `tests/pipeline/test_candidate_verification_service.py` | fail-closed on empty measurement basis, no-green-only posture, verification posture computation |
+| `tests/pipeline/test_proposal_packaging_service.py` | full backbone packaging, reviewability computation, lifecycle/decision separation, lineage edge persistence |
+| `tests/read_models/test_forgecommand_read_models.py` | queue item shape, detail model layers (evidence/rationale/challenge/risk), approval blocking for NOT_REVIEWABLE, non-authoritative notice, lifecycle/decision separation |
 
 ### 16.3 Current Test Commands
 

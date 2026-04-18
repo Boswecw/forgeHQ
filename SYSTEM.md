@@ -3,7 +3,7 @@
 > Bounded proposal-generation and confidence-shaping subsystem for the BDS ecosystem.
 > "Reviewable candidates without counterfeit authority."
 
-**Document version:** 1.2 (2026-04-03) — Phase 1 scaffold plus QA foundation
+**Document version:** 1.5 (2026-04-04) — Phase 6: ForgeCommand read models and read model service
 
 ---
 
@@ -31,12 +31,18 @@
 
 ## 1. Overview & Philosophy
 
+*Last updated: 2026-04-04 (Phase 6: ForgeCommand read models and read model service added)*
+
 forgeHQ is a backend/domain-contract repository for bounded proposal generation.
-The current repo state implements the governance slice, the documentation stack,
-and a Phase 1 no-op pipeline scaffold.
+The current repo state implements the governance slice (Phase 0), the documentation
+stack, a Phase 1 no-op pipeline scaffold, the Phase 2 signal intake, target ranking,
+and context curation service layer, the Phase 3 design and generation slice, the
+Phase 4 critic and verification slice, the Phase 5 proposal packaging and persistence
+stubs, and the Phase 6 ForgeCommand integration read models.
 This repository defines how forgeHQ names artifacts, stages work,
 separates proposal posture from decision posture,
-and advances a shaping run through bounded placeholder artifacts without inventing live runtime semantics.
+and advances a shaping run through bounded service-produced artifacts without
+inventing live runtime semantics beyond its governed scope.
 
 ### 1.1 Core Principles
 
@@ -62,21 +68,35 @@ and advances a shaping run through bounded placeholder artifacts without inventi
 | No-op orchestrator skeleton | Implemented |
 | Reviewability vocabulary | Implemented |
 | Documentation assembly stack | Implemented |
+| Signal authority classification (`SourceAuthorityClass`) | Implemented |
+| Signal intake service (`SignalIntakeService`) | Implemented |
+| Target ranking service (`TargetRankingService`) | Implemented |
+| Context bundle service (`ContextBundleService`) | Implemented |
+| `IntakeDiagnostics` and `RankingFactorTrace` schemas | Implemented |
+| `AGENTS.md` repo doctrine file | Implemented |
+| Candidate design service (`CandidateDesignService`) | Implemented |
+| Candidate generation service (`CandidateGenerationService`) | Implemented |
+| Falsification service (`FalsificationService`) | Implemented |
+| Candidate verification service (`CandidateVerificationService`) | Implemented |
+| `ChallengePosture` and `VerificationPosture` enums | Implemented |
+| Proposal packaging service (`ProposalPackagingService`) | Implemented |
+| Reviewability engine (`compute_reviewability`) | Implemented |
+| Persistence stubs (`ArtifactRegistry`, `LineageRepository`, `ProposalRepository`) | Implemented (in-memory; DataForge wiring pending) |
+| ForgeCommand read models (`ProposalQueueItem`, `ProposalDetailModel`, layered) | Implemented |
+| ForgeCommand read model service (`ForgeCommandReadModelService`) | Implemented |
 | API surface | Not implemented |
-| Live stage services | Not implemented |
-| Persistence layer | Not implemented |
-| Adapters and persistence wiring | Not implemented |
 | UI or operator surface | Not implemented |
 
 ---
 
 ## 2. Architecture
 
-The current implementation is a contract-first Python repository.
-It still does not expose an application runtime,
-but it now includes a no-op shaping-run scaffold that can progress through all stages with placeholder artifacts.
-Repo architecture is centered on bounded domain contracts, typed schema stubs,
-strict stage routing, and a documentation assembly surface.
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The current implementation is a contract-first Python repository with a full
+Phases 0–6 service layer. It does not yet expose an HTTP API or UI runtime,
+but all backbone pipeline services, in-memory persistence stubs, and
+ForgeCommand read models are implemented and tested.
 
 ### 2.1 Current Implemented Shape
 
@@ -85,9 +105,13 @@ forgeHQ/
   app/domain/artifacts/
   app/domain/pipeline/
   app/domain/reviewability/
+  app/domain/signals/
   app/domain/workers/
   app/schemas/
   app/orchestration/
+  app/services/
+  app/persistence/
+  app/read_models/
   docs/architecture/
   docs/contracts/
   doc/system/
@@ -101,20 +125,25 @@ forgeHQ/
 ForgeEval / ForgeMath
         |
         v
-   forgeHQ contracts
+   forgeHQ service layer
+   (SignalIntake → Ranking → ContextBundle → Design → Generation
+    → Falsification → Verification → Packaging → ReadModels)
         |
         v
-DataForge / ForgeCommand
+DataForge (persistence — wiring pending)
+        |
+        v
+ForgeCommand (read models implemented; API surface pending)
 ```
 
 ### 2.3 Architectural Posture
 
 | Concern | Current posture |
 | --- | --- |
-| Upstream authority | Declared boundary only |
-| Runtime orchestration | Implemented as a no-op stage scaffold only |
-| Persistence boundary | Declared boundary only |
-| Operator review surface | Declared boundary only |
+| Upstream authority | Declared boundary; signal authority classification implemented |
+| Runtime orchestration | No-op scaffold + live service layer (Phases 2–6) |
+| Persistence boundary | In-memory stubs implemented; DataForge wiring pending |
+| Operator review surface | Read models implemented (`ProposalQueueItem`, `ProposalDetailModel`); API pending |
 | Repo documentation truth | Implemented via `doc/system/` and `SYSTEM.md` |
 
 ### 2.4 Hard Architectural Laws
@@ -168,15 +197,20 @@ It reflects a contract-first bootstrap rather than a full service implementation
 
 ```text
 forgeHQ/
+├── AGENTS.md
 ├── FORGEHQ_COMPREHENSIVE_TEST_PLAN.md
 ├── app/
 │   ├── domain/
 │   │   ├── artifacts/
 │   │   ├── pipeline/
 │   │   ├── reviewability/
+│   │   ├── signals/
 │   │   └── workers/
 │   ├── orchestration/
-│   └── schemas/
+│   ├── persistence/
+│   ├── read_models/
+│   ├── schemas/
+│   └── services/
 ├── doc/
 │   └── system/
 ├── docs/
@@ -189,6 +223,7 @@ forgeHQ/
 ├── tests/
 │   ├── contract/
 │   ├── pipeline/
+│   ├── read_models/
 │   └── workers/
 ├── CLAUDE.md
 ├── SYSTEM.md
@@ -326,9 +361,12 @@ but no transport contract is part of the current repo truth.
 
 ## 9. Backend
 
-The backend currently consists of domain-contract modules,
-typed schema stubs, a strict stage router, and a no-op orchestrator.
-No live service runtime or persistence layer has been implemented yet.
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The backend implements domain-contract modules, typed schema stubs, a strict stage
+router, a no-op orchestrator scaffold, a full Phases 2–6 service layer, in-memory
+persistence stubs, and ForgeCommand read models. No HTTP API or persistence wiring
+to DataForge has been implemented yet.
 
 ### 9.1 Current Backend Modules
 
@@ -337,38 +375,58 @@ No live service runtime or persistence layer has been implemented yet.
 | Artifact domain | `app/domain/artifacts/enums.py` | Artifact families, lineage layers, backbone registry |
 | Pipeline domain | `app/domain/pipeline/enums.py` | Stage order, stage artifacts, stage owners |
 | Reviewability domain | `app/domain/reviewability/enums.py` | Reviewability requirements, lifecycle state split, language posture |
+| Signals domain | `app/domain/signals/enums.py` | Source authority classification, admissibility decision |
 | Worker domain | `app/domain/workers/enums.py` | Worker identities and allowed emissions |
-| Schema stubs | `app/schemas/` | Typed placeholders for shaping runs and required artifacts |
+| Schema stubs | `app/schemas/` | Typed artifact and run models for all 8 pipeline stages |
 | Stage router | `app/orchestration/stage_router.py` | Fail-closed stage-order and predecessor validation |
 | No-op orchestrator | `app/orchestration/forgehq_orchestrator.py` | Placeholder artifact emission in strict stage order |
+| Signal intake service | `app/services/signal_intake_service.py` | Source ref admission, authority classification, fail-closed on unknowns |
+| Target ranking service | `app/services/target_ranking_service.py` | Composite score with 2× deterministic weighting, ranking trace |
+| Context bundle service | `app/services/context_bundle_service.py` | Bounded context curation, scope policy enforcement |
+| Candidate design service | `app/services/candidate_design_service.py` | Hypothesis and oracle design, scope locking from bundle |
+| Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
+| Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
+| Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
+| Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
+| Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
+| Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |
+| Lineage repository | `app/persistence/lineage_repository.py` | In-memory directed lineage edge store |
+| Proposal repository | `app/persistence/proposal_repository.py` | In-memory proposal row store with lifecycle/decision separation |
+| ForgeCommand read models | `app/read_models/forgecommand.py` | `ProposalQueueItem`, `ProposalDetailModel`, and 4 layer types |
+| ForgeCommand read model service | `app/services/forgecommand_read_model_service.py` | Assembles queue items and detail models from backbone artifacts |
 
-### 9.2 Current Missing Backend Slices
+### 9.2 Pending Backend Slices
 
 | Slice | Status |
 | --- | --- |
-| `app/services/` | Not implemented |
-| `app/persistence/` | Not implemented |
-| `app/read_models/` | Not implemented |
+| DataForge persistence wiring | Pending (in-memory stubs in place) |
+| HTTP API surface | Not implemented |
+| ForgeCommand API integration | Not implemented (read models done; API layer pending) |
 
 ### 9.3 Backend Law
 
-Current backend code exists to lock repo semantics before live service logic arrives.
-The orchestrator is a bounded scaffold for placeholder progression, not production execution semantics.
+The orchestrator is a bounded scaffold for placeholder progression.
+Service layer logic is authoritative for Phases 2–6 pipeline semantics.
+Persistence stubs use in-memory storage; DataForge wiring is the next persistence boundary step.
 
 ---
 
 ## 10. Ecosystem Integration
 
-forgeHQ exists inside a larger BDS ecosystem but currently ships only declared boundaries rather than live adapters.
+*Last updated: 2026-04-04 (Phase 6: ForgeCommand read models implemented)*
+
+forgeHQ exists inside a larger BDS ecosystem. Upstream boundaries remain declared-only.
+ForgeCommand now has implemented read models; the wire adapter is pending.
+DataForge persistence uses in-memory stubs; the wire adapter is pending.
 
 ### 10.1 Boundary Table
 
 | System | Relationship | Current status |
 | --- | --- | --- |
-| ForgeEval | Upstream evidence substrate | Declared boundary only |
-| ForgeMath | Upstream math/rule authority where adopted | Declared boundary only |
-| DataForge | Downstream persistence, lineage, rollback linkage | Declared boundary only |
-| ForgeCommand | Downstream review surface and operator action state | Declared boundary only |
+| ForgeEval | Upstream evidence substrate | Declared boundary; `forgeeval://` scheme admitted by `SignalIntakeService` |
+| ForgeMath | Upstream math/rule authority where adopted | Declared boundary; `forgemath://` scheme admitted by `SignalIntakeService` |
+| DataForge | Downstream persistence, lineage, rollback linkage | In-memory stubs implemented (`ArtifactRegistry`, `LineageRepository`, `ProposalRepository`); wire adapter pending |
+| ForgeCommand | Downstream review surface and operator action state | Read models implemented (`ProposalQueueItem`, `ProposalDetailModel`, `ForgeCommandReadModelService`); HTTP API adapter pending |
 
 ### 10.2 Integration Laws
 
@@ -380,8 +438,11 @@ forgeHQ exists inside a larger BDS ecosystem but currently ships only declared b
 
 ## 11. Database Schema
 
-forgeHQ currently defines no database schema.
-No migrations, tables, or repository persistence models exist in the current repo state.
+*Last updated: 2026-04-04 (in-memory persistence stubs implemented)*
+
+forgeHQ defines no SQL schema, ORM models, or migrations.
+In-memory persistence stubs are implemented for all three persistence surfaces;
+DataForge wire adapters are pending.
 
 ### 11.1 Current Persistence Status
 
@@ -389,17 +450,32 @@ No migrations, tables, or repository persistence models exist in the current rep
 | --- | --- |
 | SQL migrations | Not implemented |
 | ORM models | Not implemented |
-| Artifact registry tables | Not implemented |
-| Lineage edge tables | Not implemented |
-| Proposal rows | Not implemented |
+| In-memory artifact registry | Implemented — `app/persistence/artifact_registry.py` (`ArtifactRegistry`) |
+| In-memory lineage edge store | Implemented — `app/persistence/lineage_repository.py` (`LineageRepository`, `LineageEdge`) |
+| In-memory proposal row store | Implemented — `app/persistence/proposal_repository.py` (`ProposalRepository`, `ProposalRow`) |
+| DataForge wire adapter | Not implemented |
 
-### 11.2 Future Boundary
+### 11.2 In-Memory Persistence Models
 
-When persistence is added later, DataForge-facing lineage and proposal persistence must preserve:
+The stubs are frozen dataclasses and append-only stores — they define the persistence
+structure that will be wired to DataForge, not SQL tables.
+
+| Class | Module | Structure |
+| --- | --- | --- |
+| `ArtifactRegistry` | `app/persistence/artifact_registry.py` | Dict keyed by `artifact_id`; append-only; raises `ArtifactRegistryError` on duplicate |
+| `LineageEdge` | `app/persistence/lineage_repository.py` | Frozen dataclass: `parent_artifact_id`, `child_artifact_id`, `relationship_type`, `run_id` |
+| `LineageRepository` | `app/persistence/lineage_repository.py` | List of `LineageEdge`; queryable by artifact id |
+| `ProposalRow` | `app/persistence/proposal_repository.py` | Frozen dataclass with separate `proposal_lifecycle_state` and `operator_decision_state` fields |
+| `ProposalRepository` | `app/persistence/proposal_repository.py` | Dict keyed by `proposal_artifact_id`; queryable by run_id |
+
+### 11.3 Future Boundary
+
+When DataForge wiring is added, the in-memory stubs must be replaced with adapters
+that preserve:
 
 - deterministic evidence lineage
 - non-authoritative proposal lineage
-- operator decision linkage
+- operator decision linkage (always separate from proposal lifecycle state)
 
 ---
 
@@ -465,9 +541,11 @@ Missing any required backbone artifact forces `not_reviewable`.
 
 ## 14. Pipeline & Reviewability
 
-The current repo implements the vocabulary for the shaping pipeline and reviewability gates,
-plus a Phase 1 no-op router/orchestrator that can advance a shaping run with placeholder artifacts.
-It still does not implement the live services behind those stages.
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The current repo implements the full shaping pipeline through live service logic (Phases 2–6),
+plus a Phase 1 no-op router/orchestrator for placeholder artifact progression.
+All 8 pipeline stages have corresponding service implementations.
 
 ### 14.1 Stage Order
 
@@ -512,47 +590,95 @@ A proposal is reviewable only when all of the following are present:
 - orchestrator emits no proposal content
 - generator and critic/falsifier lanes remain structurally independent
 
-### 14.5 Phase 1 Router Guarantees
+### 14.5 Router and Service Guarantees
 
+**Phase 1 router (stage_router.py):**
 - no stages may be skipped
 - candidate generation is blocked when candidate design is missing
 - proposal packaging is blocked when falsification is missing
 - proposal packaging is blocked when verification is missing
 - invalid run histories fail closed before artifact emission
 
+**Service layer (Phases 2–6):**
+- `SignalIntakeService` — rejects unknown source ref schemes; fails closed when no source is admitted
+- `TargetRankingService` — rejects placeholder snapshots; enforces deterministic 2× weighting
+- `ContextBundleService` — rejects scope exceeding 50 items, duplicates, placeholder inputs
+- `CandidateDesignService` — rejects placeholder bundles; locks scope boundary from context
+- `CandidateGenerationService` — enforces all `modified_refs` ⊆ `context_item_refs`
+- `FalsificationService` — requires at least one evaluated disconfirming check
+- `CandidateVerificationService` — requires both observed gains and residual weaknesses (no-green-only)
+- `ProposalPackagingService` — computes reviewability via pure `compute_reviewability()` function
+
 ---
 
 ## 15. Error Handling Contract
 
+*Last updated: 2026-04-04 (Phases 2–6 error classes documented)*
+
 Current repo behavior is fail-closed by doctrine.
-The implemented contract layer treats missing truth, collapsed states,
-and invalid boundary assumptions as hard failures, not recoverable guesses.
+The implemented service layer raises explicit typed exceptions rather than silently
+degrading or returning partial results.
 
 ### 15.1 Current Fail-Closed Conditions
 
 | Condition | Current contract posture |
 | --- | --- |
 | Ambiguous system role | Reject broadening repo authority |
-| Missing challenge or verification for reviewability | `not_reviewable` |
+| Unknown signal source ref scheme | `UnknownSourceRefError` → source rejected at intake |
+| All sources rejected at intake | `NoAdmittedSourcesError` raised |
+| Placeholder snapshot or ranking passed to service | `RankingError` raised |
+| Scope exceeds 50 items or contains duplicates | `ScopeEscapeError` raised |
+| Placeholder bundle or target_id mismatch in design | `DesignError` raised |
+| `modified_refs` not a subset of `context_item_refs` | `GenerationScopeError` raised |
+| No disconfirming checks evaluated in falsification | `FalsificationError` raised |
+| Empty measurement basis or observed gains in verification | `VerificationError` raised |
+| Empty residual weaknesses in verification (green-only) | `VerificationError` raised |
+| Duplicate artifact registration | `ArtifactRegistryError` raised |
+| Missing backbone artifact at packaging | `PackagingError` raised |
+| Missing challenge or verification for reviewability | `not_reviewable` state set |
 | Proposal/operator state collapse | Forbidden by separate enums |
 | Missing documentation build inputs | Build and context scripts exit non-zero |
-| Unknown preset or section in context bundle | Script exits non-zero |
 
-### 15.2 Current Error Surface
+### 15.2 Error Class Inventory
+
+| Exception class | Module | Inherits from |
+| --- | --- | --- |
+| `StageTransitionError` | `app/orchestration/stage_router.py` | `ValueError` |
+| `InvalidStageTransitionError` | `app/orchestration/stage_router.py` | `StageTransitionError` |
+| `MissingRequiredArtifactError` | `app/orchestration/stage_router.py` | `StageTransitionError` |
+| `InvalidStageEmissionError` | `app/orchestration/stage_router.py` | `StageTransitionError` |
+| `SignalIntakeError` | `app/services/signal_intake_service.py` | `ValueError` |
+| `UnknownSourceRefError` | `app/services/signal_intake_service.py` | `SignalIntakeError` |
+| `NoAdmittedSourcesError` | `app/services/signal_intake_service.py` | `SignalIntakeError` |
+| `RankingError` | `app/services/target_ranking_service.py` | `ValueError` |
+| `ScopeEscapeError` | `app/services/context_bundle_service.py` | `ValueError` |
+| `DesignError` | `app/services/candidate_design_service.py` | `ValueError` |
+| `GenerationScopeError` | `app/services/candidate_generation_service.py` | `ValueError` |
+| `FalsificationError` | `app/services/falsification_service.py` | `ValueError` |
+| `VerificationError` | `app/services/candidate_verification_service.py` | `ValueError` |
+| `PackagingError` | `app/services/proposal_packaging_service.py` | `ValueError` |
+| `ArtifactRegistryError` | `app/persistence/artifact_registry.py` | `RuntimeError` |
+
+### 15.3 Current Error Surface
 
 | Surface | Current handling |
 | --- | --- |
-| Python contract violations | Test-detected invariant failure |
+| Service layer violations | Typed exception raised immediately; no silent degradation |
+| Stage router violations | Typed `StageTransitionError` subclass raised |
+| Persistence violations | `ArtifactRegistryError` raised on duplicate registration |
 | Bash documentation scripts | Non-zero exit with stderr message |
-| Runtime API errors | Not applicable because no API exists |
+| Runtime API errors | Not applicable — no HTTP API exists yet |
 
 ---
 
 ## 16. Testing Infrastructure
 
-The current repo now includes a QA protocol foundation sized to actual maturity.
-forgeHQ remains a contract/bootstrap repo with a Phase 1 scaffold,
-so testing is centered on T0 pre-flight, T1 contract coverage, and limited T6 tooling checks.
+*Last updated: 2026-04-04 (Phases 2–6 test suites added)*
+
+The current repo implements Phases 0–6, so the test suite now spans contract
+coverage, full pipeline service tests, and ForgeCommand read model tests.
+T0 pre-flight and T1 contract coverage remain the required gate; T3–T8 are
+not yet applicable because no HTTP API or UI surface exists.
 
 ### 16.1 QA Foundation Artifacts
 
@@ -578,6 +704,15 @@ so testing is centered on T0 pre-flight, T1 contract coverage, and limited T6 to
 | `tests/pipeline/test_stage_progression.py` | valid no-op stage progression and skip rejection |
 | `tests/pipeline/test_design_required_before_generation.py` | candidate-generation block when design is missing |
 | `tests/pipeline/test_reviewability_requires_challenge_and_verification.py` | packaging blocks when falsification or verification are missing |
+| `tests/pipeline/test_signal_intake_service.py` | admissibility classification, source-ref preservation, fail-closed on unknown schemes, non-authoritative posture |
+| `tests/pipeline/test_target_ranking_service.py` | fail-closed on placeholder snapshot, composite score computation, deterministic 2× weighting, ranking trace explainability |
+| `tests/pipeline/test_context_bundle_service.py` | scope policy enforcement, target_id consistency, duplicate ref rejection, non-authoritative posture |
+| `tests/pipeline/test_candidate_design_service.py` | fail-closed on placeholder bundle, empty required fields, scope locking from bundle, non-authoritative posture |
+| `tests/pipeline/test_candidate_generation_service.py` | design-before-generation enforcement, scope adherence, target_id consistency, non-authoritative posture |
+| `tests/pipeline/test_falsification_service.py` | fail-closed on placeholders and missing evaluated checks, downgrade logic, critic lane independence |
+| `tests/pipeline/test_candidate_verification_service.py` | fail-closed on empty measurement basis, no-green-only posture, verification posture computation |
+| `tests/pipeline/test_proposal_packaging_service.py` | full backbone packaging, reviewability computation, lifecycle/decision separation, lineage edge persistence |
+| `tests/read_models/test_forgecommand_read_models.py` | queue item shape, detail model layers (evidence/rationale/challenge/risk), approval blocking for NOT_REVIEWABLE, non-authoritative notice, lifecycle/decision separation |
 
 ### 16.3 Current Test Commands
 
@@ -614,16 +749,23 @@ so testing is centered on T0 pre-flight, T1 contract coverage, and limited T6 to
 
 ## 17. Handover / Migration Notes
 
-The current repo is a Phase 1 baseline.
-It now includes a no-op shaping pipeline skeleton,
-but it should not be misread as a functional shaping service yet.
+*Last updated: 2026-04-04 (Phases 0–6 complete)*
+
+The current repo implements Phases 0–6 of the forgeHQ implementation plan.
+The full 8-stage pipeline service layer, in-memory persistence stubs, and
+ForgeCommand read models are implemented and tested. No HTTP API or
+DataForge wire adapter exists yet.
 
 ### 17.1 Current Handover Summary
 
 | Topic | Current truth |
 | --- | --- |
-| Repo maturity | Governance baseline plus Phase 1 stage scaffold |
-| Runtime capability | No-op stage progression with placeholder artifacts only |
+| Repo maturity | Phases 0–6 complete; Phase 7 (hardening and scale-out) not started |
+| Runtime capability | Full pipeline service layer (Phases 2–6); no HTTP API runtime |
+| Pipeline services | All 8 stages implemented with fail-closed service classes |
+| Persistence | In-memory stubs (`ArtifactRegistry`, `LineageRepository`, `ProposalRepository`); DataForge wire adapter pending |
+| ForgeCommand surface | Read models and read model service implemented; HTTP API adapter pending |
+| Test coverage | 159 tests passing across contract, pipeline, worker, and read model suites |
 | Canonical documentation source | `doc/system/` |
 | Root build artifact | `SYSTEM.md` |
 | Root QA plan | `FORGEHQ_COMPREHENSIVE_TEST_PLAN.md` |
@@ -634,8 +776,8 @@ but it should not be misread as a functional shaping service yet.
 
 ### 17.2 Migration Notes
 
-- existing governance docs in `docs/` remain valid source material and are now reflected in the assembled system reference
+- existing governance docs in `docs/` remain valid source material and are reflected in the assembled system reference
 - company-core protocols are stored as imported references under `docs/reference/bds/`, not as ambiguous repo-root files
 - QA protocol compliance for current maturity now lives in the root test plan plus `docs/qa/` support artifacts
-- future service slices must update both `docs/` and `doc/system/` when repo truth changes
-- repo-local Phase 1 implementation and QA foundation are complete enough to support bounded Phase 2 work
+- future slices must update both `docs/` and `doc/system/` when repo truth changes
+- the next phase boundary is Phase 7 (hardening and scale-out); prior to that, DataForge wiring and HTTP API surface are the natural next integration points

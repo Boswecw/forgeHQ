@@ -1,15 +1,19 @@
 ## 10. Ecosystem Integration
 
-forgeHQ exists inside a larger BDS ecosystem but currently ships only declared boundaries rather than live adapters.
+*Last updated: 2026-04-04 (Phase 6: ForgeCommand read models implemented)*
+
+forgeHQ exists inside a larger BDS ecosystem. Upstream boundaries remain declared-only.
+ForgeCommand now has implemented read models; the wire adapter is pending.
+DataForge persistence uses in-memory stubs; the wire adapter is pending.
 
 ### 10.1 Boundary Table
 
 | System | Relationship | Current status |
 | --- | --- | --- |
-| ForgeEval | Upstream evidence substrate | Declared boundary only |
-| ForgeMath | Upstream math/rule authority where adopted | Declared boundary only |
-| DataForge | Downstream persistence, lineage, rollback linkage | Declared boundary only |
-| ForgeCommand | Downstream review surface and operator action state | Declared boundary only |
+| ForgeEval | Upstream evidence substrate | Declared boundary; `forgeeval://` scheme admitted by `SignalIntakeService` |
+| ForgeMath | Upstream math/rule authority where adopted | Declared boundary; `forgemath://` scheme admitted by `SignalIntakeService` |
+| DataForge | Downstream persistence, lineage, rollback linkage | In-memory stubs implemented (`ArtifactRegistry`, `LineageRepository`, `ProposalRepository`); wire adapter pending |
+| ForgeCommand | Downstream review surface and operator action state | Read models implemented (`ProposalQueueItem`, `ProposalDetailModel`, `ForgeCommandReadModelService`); HTTP API adapter pending |
 
 ### 10.2 Integration Laws
 

@@ -1,8 +1,10 @@
 ## 14. Pipeline & Reviewability
 
-The current repo implements the vocabulary for the shaping pipeline and reviewability gates,
-plus a Phase 1 no-op router/orchestrator that can advance a shaping run with placeholder artifacts.
-It still does not implement the live services behind those stages.
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The current repo implements the full shaping pipeline through live service logic (Phases 2–6),
+plus a Phase 1 no-op router/orchestrator for placeholder artifact progression.
+All 8 pipeline stages have corresponding service implementations.
 
 ### 14.1 Stage Order
 
@@ -47,10 +49,21 @@ A proposal is reviewable only when all of the following are present:
 - orchestrator emits no proposal content
 - generator and critic/falsifier lanes remain structurally independent
 
-### 14.5 Phase 1 Router Guarantees
+### 14.5 Router and Service Guarantees
 
+**Phase 1 router (stage_router.py):**
 - no stages may be skipped
 - candidate generation is blocked when candidate design is missing
 - proposal packaging is blocked when falsification is missing
 - proposal packaging is blocked when verification is missing
 - invalid run histories fail closed before artifact emission
+
+**Service layer (Phases 2–6):**
+- `SignalIntakeService` — rejects unknown source ref schemes; fails closed when no source is admitted
+- `TargetRankingService` — rejects placeholder snapshots; enforces deterministic 2× weighting
+- `ContextBundleService` — rejects scope exceeding 50 items, duplicates, placeholder inputs
+- `CandidateDesignService` — rejects placeholder bundles; locks scope boundary from context
+- `CandidateGenerationService` — enforces all `modified_refs` ⊆ `context_item_refs`
+- `FalsificationService` — requires at least one evaluated disconfirming check
+- `CandidateVerificationService` — requires both observed gains and residual weaknesses (no-green-only)
+- `ProposalPackagingService` — computes reviewability via pure `compute_reviewability()` function
