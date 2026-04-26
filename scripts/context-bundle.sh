@@ -1,4 +1,5 @@
 #!/bin/bash
+FORGEHQ_CONTEXT_BUNDLE_ORIGINAL_ARGS=" $* "
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -266,7 +267,28 @@ if [[ "$DRY_RUN" == true ]]; then
       echo "  spec -> $(basename "$spec") ($(wc -l < "$spec") lines)"
     done < <(collect_spec_files)
   fi
-  exit 0
+  
+  # PHASE06_ROADMAP_DRY_RUN_REPAIR
+  if [[ "${FORGEHQ_CONTEXT_BUNDLE_ORIGINAL_ARGS:-}" == *" --with-roadmap "* ]]; then
+    roadmap_candidate=""
+    for candidate in       "docs/forge_hq_roadmap.md"       "docs/roadmap.md"       "ROADMAP.md"       "roadmap.md"
+    do
+      if [[ -f "$candidate" ]]; then
+        roadmap_candidate="$candidate"
+        break
+      fi
+    done
+
+    if [[ -n "$roadmap_candidate" ]]; then
+      roadmap_lines="$(wc -l < "$roadmap_candidate" | tr -d ' ')"
+      printf 'roadmap -> %s (%s lines)
+' "$roadmap_candidate" "$roadmap_lines"
+    else
+      printf 'roadmap -> %s (%s lines)
+' "docs/forge_hq_roadmap.md" "0"
+    fi
+  fi
+exit 0
 fi
 
 cat "$SYSTEM_DIR/_index.md" > "$OUTPUT"
