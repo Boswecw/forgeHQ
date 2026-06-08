@@ -4,6 +4,7 @@ Signal source authority classification for forgeHQ.
 Source refs use URI-scheme prefixes to declare their authority class:
   forgeeval://  → deterministic evidence from ForgeEval
   forgemath://  → governed mathematical authority from ForgeMath
+  cloud://      → cloud advisory proposal (ForgeCommand cloud diagnostics) — weak
   signal://     → ecosystem weak signal (coverage, mutation, regression, etc.)
   anything else → UNKNOWN — always rejected at intake
 
@@ -32,6 +33,9 @@ _SCHEME_TO_AUTHORITY: Final = MappingProxyType(
     {
         "forgeeval": SourceAuthorityClass.DETERMINISTIC_EVIDENCE,
         "forgemath": SourceAuthorityClass.GOVERNED_MATH,
+        # Cloud advisory proposals (FC-server cloud diagnostics) are
+        # non-deterministic AI recommendations -> weak (advisory) signal.
+        "cloud": SourceAuthorityClass.WEAK_SIGNAL,
         "signal": SourceAuthorityClass.WEAK_SIGNAL,
     }
 )
