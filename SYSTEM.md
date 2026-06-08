@@ -1,31 +1,76 @@
-# forgeHQ — Complete System Reference
+# forgeHQ — System Documentation
 
-> Bounded proposal-generation and confidence-shaping subsystem for the BDS ecosystem.
-> "Reviewable candidates without counterfeit authority."
+**Document version:** 1.1 (2026-06-08) — full chapter set indexed
+**Protocol:** Forge Documentation Protocol v1
+**Documentation structure class:** `documentation`
 
-**Document version:** 1.5 (2026-04-04) — Phase 6: ForgeCommand read models and read model service
+This `doc/system/` tree is the canonical source of truth for forgeHQ.
+Chapters are assembled into a designation-bound canonical artifact.
 
----
+Assembly contract:
+
+- Command: `bash doc/system/BUILD.sh`
+- Validation: `bash doc/system/validate_snapshots.sh` runs during assembly
+- Primary output: `doc/FRGSYSTEM.md`
 
 ## Table of Contents
 
-1. [Overview & Philosophy](#1-overview--philosophy)
-2. [Architecture](#2-architecture)
-3. [Tech Stack](#3-tech-stack)
-4. [Project Structure](#4-project-structure)
-5. [Configuration & Environment](#5-configuration--environment)
-6. [Design System](#6-design-system)
-7. [Frontend](#7-frontend)
-8. [API Layer](#8-api-layer)
-9. [Backend](#9-backend)
-10. [Ecosystem Integration](#10-ecosystem-integration)
-11. [Database Schema](#11-database-schema)
-12. [AI Integration](#12-ai-integration)
-13. [Proposal Artifact Model](#13-proposal-artifact-model)
-14. [Pipeline & Reviewability](#14-pipeline--reviewability)
-15. [Error Handling Contract](#15-error-handling-contract)
-16. [Testing Infrastructure](#16-testing-infrastructure)
-17. [Handover / Migration Notes](#17-handover--migration-notes)
+0. [Overview](00-overview.md)
+1. [Architecture](01-architecture.md)
+1. [Overview Philosophy](01-overview-philosophy.md)
+2. [Architecture](02-architecture.md)
+3. [Tech Stack](03-tech-stack.md)
+4. [Project Structure](04-project-structure.md)
+5. [Configuration](05-configuration.md)
+6. [Design System](06-design-system.md)
+7. [Frontend](07-frontend.md)
+8. [Api Layer](08-api-layer.md)
+9. [Backend](09-backend.md)
+10. [Ecosystem Integration](10-ecosystem-integration.md)
+10. [Scope](10-scope.md)
+11. [Database Schema](11-database-schema.md)
+12. [AI Integration](12-ai-integration.md)
+13. [Proposal Artifact Model](13-proposal-artifact-model.md)
+14. [Pipeline Reviewability](14-pipeline-reviewability.md)
+15. [Error Handling](15-error-handling.md)
+16. [Testing Infrastructure](16-testing-infrastructure.md)
+17. [Handover Migration Notes](17-handover-migration-notes.md)
+20. [Structure](20-structure.md)
+30. [Governance](30-governance.md)
+40. [Change Control](40-change-control.md)
+90. [Appendices](90-appendices.md)
+
+## Quick Assembly
+
+```bash
+bash doc/system/BUILD.sh
+```
+
+---
+
+# Overview
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+System identity, role, and boundary with the rest of the Forge ecosystem.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Architecture
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+High-level architecture, authority posture, and surface ownership.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
 
 ---
 
@@ -436,6 +481,19 @@ DataForge persistence uses in-memory stubs; the wire adapter is pending.
 
 ---
 
+# Scope
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Scope and authority boundary of this documentation system.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
 ## 11. Database Schema
 
 *Last updated: 2026-04-04 (in-memory persistence stubs implemented)*
@@ -781,3 +839,58 @@ DataForge wire adapter exists yet.
 - QA protocol compliance for current maturity now lives in the root test plan plus `docs/qa/` support artifacts
 - future slices must update both `docs/` and `doc/system/` when repo truth changes
 - the next phase boundary is Phase 7 (hardening and scale-out); prior to that, DataForge wiring and HTTP API surface are the natural next integration points
+
+---
+
+# Structure
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Module/chapter layout and cross-reference rules.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Governance
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Ownership, review, and change-authority boundaries.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Change Control
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Change-control workflow, proposal lifecycle, and audit.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Appendices
+
+**Document version:** 1.0 (carry-forward)
+
+Appendices, glossary, and cross-references.
+
+## Unmapped legacy chapters
+
+The following legacy chapters were carried forward but could not be
+deterministically mapped to a class-aware slot. Review and place them by
+hand:
+
+- `forgeHQ — Complete System Reference`
