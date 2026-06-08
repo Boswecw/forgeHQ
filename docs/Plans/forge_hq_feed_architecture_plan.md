@@ -72,23 +72,28 @@ add API/persistence/orchestration ahead of the phase that calls for it.
 **P1 — Source feeders (DONE: slices A + B).** Eval-family + cloud → admissible
 refs → real intake.
 
-**P2 — Producer enumeration adapters.** Read producer outputs and emit feeder
-records:
-- forge-eval / ForgeMath / eval-cal-node: enumerate their output nodes from the
-  DataForge-Local lineage graph (`forge_eval_*`, `forgemath_*`, `eval_cal_*`).
-  *Requires a lineage "list nodes by type" read on the DataForge-Local surface
-  (today it exposes `nodes/{id}` + `downstream` only).*
-- cloud: read FC-server `cloud_proposals` (via its API / `cloud_proposal_handoffs`
-  with a `handoff_target` for forgeHQ) into `CloudProposal` records.
+**P2 — Producer enumeration adapters (DONE).** P2a: DataForge-Local
+`GET /api/v1/lineage/nodes?node_type=&source_system=` list-by-type read. P2b:
+`app/services/producer_enumeration.py` pure mappers — lineage node →
+`EvalOutput` (`forge_eval_*` / `forgemath_*`), cloud record → `CloudProposal`.
+Transport-free (a driver supplies the records).
 
-**P3 — Drive the real intake stage.** Replace the orchestrator's placeholder
-`SIGNAL_INTAKE` emission with the real `SignalSnapshot` from `admit_signals`,
-keeping `apply_transition` contract (`SIGNAL_INTAKE` must emit exactly
-`SIGNAL_SNAPSHOT`). This is the first real pipeline stage.
+**P3 — Drive the real intake stage (DONE).** `ForgeHQOrchestrator.advance_signal_intake`
+/ `run_from_signals` emit the real `SignalSnapshot` from `admit_signals` at
+`SIGNAL_INTAKE` (exactly one `SIGNAL_SNAPSHOT`, fail-closed), then placeholder the
+rest — the proposal traces to a real snapshot.
 
-**P4 — De-noop the shaping stages + add a driver.** Wire the per-stage services
-(ranking → context → design → generation → falsification → verification →
-packaging) into the orchestrator, and add a bounded driver (service entrypoint or
+**P4a — Bounded driver (DONE).** `app/orchestration/forgehq_feed_driver.py`
+`ForgeHQFeedDriver`: producer records → enumerate (P2) → feed (P1) → real-intake
+run (P3). Transport-free; the caller supplies lineage nodes / cloud records.
+
+**P4b — De-noop the shaping stages (REMAINING — proposal-shaping intelligence).**
+Wire the real per-stage services (ranking → context → design → generation →
+falsification → verification → packaging) so the run produces real shaped
+candidates, not placeholders. This is the proposal-generation product phase (the
+services exist + are non-authoritative, but need real shaping inputs — ranking
+factors, designs, patches — likely AI-assisted per §12); it is NOT a wiring slice
+and must not be faked. Plus a live entrypoint (service entrypoint or
 invoked job) that: enumerate sources → feed → run → emit `ForgeHQProposal` →
 publish read models for the ForgeCommand forgehq lane.
 
