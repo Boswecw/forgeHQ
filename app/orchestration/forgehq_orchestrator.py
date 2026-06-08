@@ -16,6 +16,7 @@ from app.schemas.forgehq_proposal import ForgeHQProposal
 from app.schemas.shaping_run import ShapingRun
 from app.schemas.signal_snapshot import SignalSnapshot
 from app.schemas.target_ranking import TargetRanking
+from app.services.signal_intake_service import SignalIntakeService
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +50,38 @@ class ForgeHQOrchestrator:
     def run_noop_pipeline(self, run_id: str) -> ShapingRun:
         run = self.start_run(run_id)
         for stage in PIPELINE_STAGE_ORDER:
+            run = self.advance_to_stage(run, stage)
+        return run
+
+    def advance_signal_intake(
+        self, run: ShapingRun, source_refs: tuple[str, ...]
+    ) -> ShapingRun:
+        """Advance the SIGNAL_INTAKE stage with a REAL SignalSnapshot.
+
+        Feed plan P3: replace the placeholder intake artifact with the real
+        admitted snapshot from SignalIntakeService (forge-eval / ForgeMath /
+        cloud / signal refs). Fails closed if no ref is admissible. Keeps the
+        stage-router contract: SIGNAL_INTAKE emits exactly a SIGNAL_SNAPSHOT.
+        """
+        validate_transition(run, PipelineStage.SIGNAL_INTAKE)
+        snapshot, _diagnostics = SignalIntakeService().admit_signals(
+            run.run_id, source_refs
+        )
+        return apply_transition(run, PipelineStage.SIGNAL_INTAKE, (snapshot,))
+
+    def run_from_signals(
+        self, run_id: str, source_refs: tuple[str, ...]
+    ) -> ShapingRun:
+        """Drive a shaping run from REAL admitted source refs.
+
+        SIGNAL_INTAKE is real (P3); the remaining shaping stages stay on the
+        placeholder path until they are wired (P4). The resulting ForgeHQProposal
+        therefore traces back to a real signal snapshot.
+        """
+        run = self.advance_signal_intake(self.start_run(run_id), source_refs)
+        for stage in PIPELINE_STAGE_ORDER:
+            if stage == PipelineStage.SIGNAL_INTAKE:
+                continue
             run = self.advance_to_stage(run, stage)
         return run
 
