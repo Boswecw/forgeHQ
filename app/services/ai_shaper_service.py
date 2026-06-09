@@ -25,6 +25,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
+from app.drivers.neuroforge_generator import GenerationResult
+from app.schemas.code_fix_classification import CodeFixClassification
+from app.schemas.code_fix_outcome import CodeFixOutcome
+from app.services.code_fix_outcome_builder import CodeFixOutcomeBuilder
 from app.services.code_fix_shaper import (
     CodeFixProposal,
     CodeFixShaper,
@@ -140,12 +144,19 @@ class AiShaperService:
         severity: str = "low",
         pack: dict[str, Any] | None = None,
         publish: bool = True,
+        classification: CodeFixClassification | None = None,
+        outcome_emitter: Callable[[CodeFixOutcome], None] | None = None,
     ) -> ShapeResult:
         """Run the full generation stage for one governed target.
 
         ``governed`` is the lineage handle
         {task_intent_id, context_bundle_id, bundle_hash, freshness_band}.
         ``pack`` may be supplied directly; otherwise it is fetched by id.
+
+        When ``classification`` is supplied, its risk-driven ``min_tier`` is passed
+        as NeuroForge's native floor (it does NOT re-route — the ladder still picks).
+        When ``outcome_emitter`` is also supplied, the verify outcome (pass OR fail —
+        both teach the (model, category) matrix) is emitted as a CodeFixOutcome.
         """
         bundle_id = governed.get("context_bundle_id")
         if not isinstance(bundle_id, str) or not bundle_id.startswith("ctxb_"):
@@ -160,14 +171,29 @@ class AiShaperService:
         if not current_content:
             return ShapeResult(False, "empty precomputed context (no primary)", bundle_id)
 
-        # 1) generate the candidate fix from the precomputed governed context
-        new_content = self._generator.generate(
-            repository=repository,
-            file_path=file_path,
-            current_content=current_content,
-            directive=directive,
-            pack=pack,
-        )
+        # 1) generate from the precomputed governed context. The risk floor (from the
+        # classification) is NeuroForge's native min_tier — the ladder still routes.
+        min_tier = classification.min_tier if classification is not None else None
+        gen = self._generator
+        if hasattr(gen, "generate_with_metadata"):
+            res = gen.generate_with_metadata(
+                file_path=file_path,
+                current_content=current_content,
+                directive=directive,
+                pack=pack,
+                min_tier=min_tier,
+            )
+            new_content, gen_model_id, gen_tier = res.content, res.model_id, res.tier
+        else:
+            new_content = gen.generate(
+                repository=repository,
+                file_path=file_path,
+                current_content=current_content,
+                directive=directive,
+                pack=pack,
+                min_tier=min_tier,
+            )
+            gen_model_id, gen_tier = None, None
         if not new_content or new_content == current_content:
             return ShapeResult(False, "generator produced no change (fail-closed)", bundle_id)
 
@@ -190,6 +216,20 @@ class AiShaperService:
             instruction_block="Cite only admitted context; reject ungrounded change.",
             answer_constraints=("no speculation", "stay within admitted scope"),
         )
+
+        # Emit the ground-truth learning outcome (verify pass OR fail — both teach
+        # the (model, category) matrix which model is best for this kind of fix).
+        if classification is not None and outcome_emitter is not None:
+            builder = CodeFixOutcomeBuilder(
+                classification=classification,
+                generation=GenerationResult(
+                    content=new_content, model_id=gen_model_id, tier=gen_tier, raw={}
+                ),
+                context_bundle_id=bundle_id,
+                task_intent_id=governed.get("task_intent_id"),
+            )
+            outcome_emitter(builder.verified(bool(verdict.get("ok"))))
+
         if not verdict.get("ok"):
             return ShapeResult(
                 False,
