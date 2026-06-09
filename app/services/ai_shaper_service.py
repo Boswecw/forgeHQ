@@ -52,6 +52,7 @@ class CodeFixGenerator(Protocol):
         current_content: str,
         directive: str,
         pack: dict[str, Any],
+        min_tier: str | None = None,
     ) -> str | None: ...
 
 
@@ -73,6 +74,7 @@ class DeterministicHygieneGenerator:
         current_content: str,
         directive: str,
         pack: dict[str, Any],
+        min_tier: str | None = None,  # ignored: deterministic transforms have no tier
     ) -> str | None:
         proposal = self._shaper.shape_all(repository, file_path, current_content)
         return proposal.new_content if proposal is not None else None

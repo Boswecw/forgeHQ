@@ -1,0 +1,50 @@
+{
+  "version": "code-fix-taxonomy.v1",
+  "note": "CANONICAL SOURCE for the code-fix capability taxonomy (the 'what' NeuroForge learns best-model-per-category on). Language-neutral; generators emit typed downstream artifacts (Python now; Rust/TS when a consumer exists). LOCKED: edits go through proposal -> compatibility -> TaxonomyMigrationMap -> regenerate -> contract-gate. Do not edit generated files by hand.",
+  "families": [
+    "code_fix",
+    "code_generation",
+    "code_review",
+    "planning",
+    "research",
+    "analysis",
+    "literary",
+    "market",
+    "general"
+  ],
+  "kinds": {
+    "hygiene":               {"group": "trivial_mechanical", "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "format":                {"group": "trivial_mechanical", "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "imports":               {"group": "trivial_mechanical", "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "lint":                  {"group": "trivial_mechanical", "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "typo_naming":           {"group": "trivial_mechanical", "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "type_annotation":       {"group": "structural",         "risk_floor": "standard",            "typical_complexity": "local"},
+    "signature":             {"group": "structural",         "risk_floor": "standard",            "typical_complexity": "bounded"},
+    "refactor_mechanical":   {"group": "structural",         "risk_floor": "standard",            "typical_complexity": "bounded"},
+    "bugfix_logic":          {"group": "behavioral",         "risk_floor": "standard",            "typical_complexity": "local"},
+    "bugfix_edgecase":       {"group": "behavioral",         "risk_floor": "standard",            "typical_complexity": "local"},
+    "error_handling":        {"group": "behavioral",         "risk_floor": "standard",            "typical_complexity": "local"},
+    "concurrency":           {"group": "hard_specialized",   "risk_floor": "governance_critical", "typical_complexity": "bounded"},
+    "security":              {"group": "hard_specialized",   "risk_floor": "governance_critical", "typical_complexity": "bounded"},
+    "performance":           {"group": "hard_specialized",   "risk_floor": "standard",            "typical_complexity": "bounded"},
+    "data_migration":        {"group": "hard_specialized",   "risk_floor": "governance_critical", "typical_complexity": "broad"},
+    "dependency":            {"group": "integration",        "risk_floor": "standard",            "typical_complexity": "bounded"},
+    "api_contract":          {"group": "integration",        "risk_floor": "standard",            "typical_complexity": "bounded"},
+    "config_build":          {"group": "integration",        "risk_floor": "standard",            "typical_complexity": "local"},
+    "test_fix":              {"group": "auxiliary",          "risk_floor": "standard",            "typical_complexity": "local"},
+    "test_add":              {"group": "auxiliary",          "risk_floor": "standard",            "typical_complexity": "local"},
+    "docs":                  {"group": "auxiliary",          "risk_floor": "standard",            "typical_complexity": "trivial"},
+    "i18n_localization":     {"group": "auxiliary",          "risk_floor": "standard",            "typical_complexity": "local"},
+    "unknown":               {"group": "auxiliary",          "risk_floor": "standard",            "typical_complexity": "bounded"}
+  },
+  "languages": [
+    "python", "rust", "typescript", "javascript", "go", "java", "csharp",
+    "sql", "shell", "config", "web", "markdown", "dockerfile", "other"
+  ],
+  "complexity_levels": ["trivial", "local", "bounded", "broad"],
+  "risk_levels": ["standard", "governance_critical"],
+  "risk_min_tier": {
+    "standard": null,
+    "governance_critical": "PREMIUM"
+  }
+}
