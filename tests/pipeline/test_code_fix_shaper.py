@@ -41,6 +41,20 @@ def test_unsupported_kind_returns_none():
     assert CodeFixShaper().shape(_issue("rewrite_everything_with_ai", "x = 1")) is None
 
 
+def test_shape_all_combines_rules_into_one_proposal():
+    # trailing whitespace AND missing trailing newline -> one hygiene proposal
+    proposal = CodeFixShaper().shape_all("sandbox-demo", "m.py", "x = 1   \ny = 2")
+    assert proposal is not None
+    assert proposal.rule == "hygiene"
+    assert proposal.new_content == "x = 1\ny = 2\n"
+    assert "trailing_whitespace" in proposal.summary
+    assert "missing_trailing_newline" in proposal.summary
+
+
+def test_shape_all_clean_file_returns_none():
+    assert CodeFixShaper().shape_all("sandbox-demo", "m.py", "x = 1\ny = 2\n") is None
+
+
 def test_noop_fails_closed():
     # already has a trailing newline -> nothing to fix -> no empty 'fix' emitted
     assert CodeFixShaper().shape(_issue("missing_trailing_newline", "x = 1\n")) is None

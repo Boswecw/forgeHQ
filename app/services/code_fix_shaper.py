@@ -89,14 +89,16 @@ def _strip_trailing_whitespace(content: str) -> str | None:
     return new if new != content else None
 
 
+# Order matters for shape_all: strip trailing whitespace first, then ensure the
+# file ends in a newline (so a stripped final line still gets its newline).
 _RULES: dict[str, tuple[str, Callable[[str], str | None]]] = {
-    "missing_trailing_newline": (
-        "Ensure the file ends with a single trailing newline.",
-        _ensure_trailing_newline,
-    ),
     "trailing_whitespace": (
         "Strip trailing whitespace from each line.",
         _strip_trailing_whitespace,
+    ),
+    "missing_trailing_newline": (
+        "Ensure the file ends with a single trailing newline.",
+        _ensure_trailing_newline,
     ),
 }
 
@@ -125,6 +127,37 @@ class CodeFixShaper:
             rule=issue.issue_kind,
             severity=issue.severity,
             commit_sha=issue.commit_sha,
+        )
+
+    def shape_all(
+        self,
+        repository: str,
+        file_path: str,
+        content: str,
+        *,
+        severity: str = "low",
+        commit_sha: str = "unknown",
+    ) -> CodeFixProposal | None:
+        """Apply every deterministic rule cumulatively, yielding ONE combined
+        hygiene proposal for a file (or None if nothing applies)."""
+        new_content = content
+        applied: list[str] = []
+        for kind, (_summary, transform) in _RULES.items():
+            result = transform(new_content)
+            if result is not None and result != new_content:
+                new_content = result
+                applied.append(kind)
+        if not applied or new_content == content:
+            return None
+        return CodeFixProposal(
+            repository=repository,
+            file_path=file_path,
+            current_content=content,
+            new_content=new_content,
+            summary="Apply deterministic hygiene fixes: " + ", ".join(applied) + ".",
+            rule="hygiene",
+            severity=severity,
+            commit_sha=commit_sha,
         )
 
     @property
