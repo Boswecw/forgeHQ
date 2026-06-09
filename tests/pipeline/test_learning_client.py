@@ -57,3 +57,23 @@ def test_emit_posts_when_model_present(monkeypatch):
     assert captured["method"] == "POST"
     assert captured["url"] == "http://nf/api/v1/learning/model-outcome"
     assert captured["body"]["model_id"] == "deepseek-chat"
+
+
+def test_emit_sends_service_key_header(monkeypatch):
+    captured = {}
+
+    class _Resp:
+        def read(self):
+            return json.dumps({"recorded": True}).encode()
+
+    @contextmanager
+    def _cm():
+        yield _Resp()
+
+    def _fake(req, timeout=None):
+        captured["auth"] = req.get_header("Authorization")
+        return _cm()
+
+    monkeypatch.setattr(lc.urllib.request, "urlopen", _fake)
+    lc.emit_model_outcome(_outcome(), neuroforge_url="http://nf", api_key="svc-key-123")
+    assert captured["auth"] == "Bearer svc-key-123"
