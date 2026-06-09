@@ -16,6 +16,7 @@ admitted source classes, and (when supplied) the pact verification verdict.
 from __future__ import annotations
 
 import json
+import urllib.parse
 import urllib.request
 from typing import Any
 
@@ -108,5 +109,23 @@ def publish_context_pack(
     request = urllib.request.Request(
         url, data=body, headers={"Content-Type": "application/json"}, method="POST"
     )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_context_pack(
+    context_pack_id: str,
+    *,
+    dataforge_url: str = DEFAULT_DATAFORGE_LOCAL_URL,
+    timeout: float = 10.0,
+) -> dict[str, Any]:
+    """GET a precomputed pack by id from DataForge-Local — the consumer side.
+
+    Returns NeuroForge's read shape {primary, supporting, metadata}. This is the
+    same fetch-by-id path NeuroForge's Context Builder uses; the AI shaper uses it
+    to generate from the precomputed governed packet instead of re-grounding.
+    """
+    url = f"{dataforge_url.rstrip('/')}/df/rag/context-pack/{urllib.parse.quote(context_pack_id, safe='')}"
+    request = urllib.request.Request(url, method="GET")
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
