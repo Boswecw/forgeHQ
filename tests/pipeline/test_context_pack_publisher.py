@@ -39,16 +39,27 @@ def _payloads():
     }
 
 
-def test_build_pack_body_primary_is_target_supporting_is_rest():
+def test_build_pack_body_excludes_prose_docs_by_default(monkeypatch):
+    # WAF stopgap: prose repo docs (doc:// / repo_truth) carry `python -m …` strings
+    # that Render's Cloudflare edge blocks, so they're dropped from grounding by default.
+    monkeypatch.delenv("FORGEHQ_INCLUDE_DOC_GROUNDING", raising=False)
     body = pub.build_pack_body(_assemble_result(), _payloads())
     assert body["context_pack_id"] == "ctxb_d13c59d092fca8b1"
     assert body["bundle_hash"] == "d13c59d092fca8b1"
     assert body["primary"] == "def x(): return 1"  # the target/active_scene
-    assert body["supporting"] == ["def y(): return 2", "# system doc"]
+    assert body["supporting"] == ["def y(): return 2"]  # code kept, doc dropped
+    assert body["metadata"]["excluded_doc_refs"] == 1
     assert body["metadata"]["task_intent_id"] == "ti_codefix_7c6acfda"
     assert body["metadata"]["freshness_band"] == "Fresh"
     assert body["metadata"]["admitted_ref_count"] == 3
     assert "active_scene" in body["metadata"]["source_classes"]
+
+
+def test_build_pack_body_includes_docs_when_opted_in(monkeypatch):
+    monkeypatch.setenv("FORGEHQ_INCLUDE_DOC_GROUNDING", "1")
+    body = pub.build_pack_body(_assemble_result(), _payloads())
+    assert body["supporting"] == ["def y(): return 2", "# system doc"]
+    assert body["metadata"]["excluded_doc_refs"] == 0
 
 
 def test_build_pack_body_includes_pact_verdict_when_supplied():

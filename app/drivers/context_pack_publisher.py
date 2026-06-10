@@ -16,11 +16,33 @@ admitted source classes, and (when supplied) the pact verification verdict.
 from __future__ import annotations
 
 import json
+import os
 import urllib.parse
 import urllib.request
 from typing import Any
 
 DEFAULT_DATAFORGE_LOCAL_URL = "http://127.0.0.1:8005"
+
+
+def _is_prose_doc(ref: str, payload: dict[str, Any]) -> bool:
+    """A prose repo-doc source (vs code/validation). These carry command examples
+    (e.g. ``python -m app``) that trip Render's Cloudflare edge WAF on the NeuroForge
+    chat endpoint — see ``_exclude_doc_grounding``."""
+    return (
+        ref.startswith("doc://")
+        or payload.get("role") == "repo_truth"
+        or payload.get("source_class") == "accepted_lore_record"
+    )
+
+
+def _exclude_doc_grounding() -> bool:
+    """WAF STOPGAP (2026-06-10): Render fronts ``*.onrender.com`` with Cloudflare, whose
+    managed command-injection rule blocks request bodies containing backtick-wrapped
+    ``python -m <module>``. forgeHQ's prose repo docs (doc:// / repo_truth) carry such
+    strings, so by default we drop prose-doc grounding from the context sent to NeuroForge
+    (code grounding is kept). Re-enable docs once Render adds a /api/v1/chat exception:
+    set ``FORGEHQ_INCLUDE_DOC_GROUNDING=1``."""
+    return os.getenv("FORGEHQ_INCLUDE_DOC_GROUNDING", "").strip().lower() not in ("1", "true", "yes")
 
 
 class ContextPackPublishError(ValueError):
@@ -49,9 +71,11 @@ def build_pack_body(
 
     refs = assemble_result.get("context_item_refs") or assemble_result.get("payload_refs") or []
 
+    exclude_docs = _exclude_doc_grounding()
     primary = ""
     supporting: list[str] = []
     source_classes: list[str] = []
+    excluded_doc_refs = 0
     for ref in refs:
         payload = payloads.get(ref)
         if not payload:
@@ -62,6 +86,11 @@ def build_pack_body(
         # everything else is supporting.
         if payload.get("role") == "target" or payload.get("source_class") == "active_scene":
             primary = content
+        elif exclude_docs and _is_prose_doc(ref, payload):
+            # WAF stopgap: prose docs carry `python -m …` which Render's Cloudflare
+            # edge blocks; drop them from grounding (code grounding is kept).
+            excluded_doc_refs += 1
+            continue
         else:
             supporting.append(content)
 
@@ -76,6 +105,7 @@ def build_pack_body(
         "freshness_band": (assemble_result.get("manifest") or {}).get("freshness_band"),
         "source_classes": source_classes,
         "admitted_ref_count": len(refs),
+        "excluded_doc_refs": excluded_doc_refs,
         "provenance": "context-runtime+pcc",
     }
     if pact_verdict is not None:
