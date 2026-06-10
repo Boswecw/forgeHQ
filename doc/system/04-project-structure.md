@@ -10,17 +10,20 @@ forgeHQ/
 ├── AGENTS.md
 ├── FORGEHQ_COMPREHENSIVE_TEST_PLAN.md
 ├── app/
+│   ├── __main__.py          # `python -m app` -> producer CLI
+│   ├── cli.py               # producer entrypoint (self-heal); spawned by ForgeCommand
 │   ├── domain/
 │   │   ├── artifacts/
 │   │   ├── pipeline/
 │   │   ├── reviewability/
 │   │   ├── signals/
 │   │   └── workers/
+│   ├── drivers/             # live edges (learning/context/pact/publish clients)
 │   ├── orchestration/
 │   ├── persistence/
 │   ├── read_models/
 │   ├── schemas/
-│   └── services/
+│   └── services/            # incl. self_healing_runner.build_live_runner
 ├── doc/
 │   └── system/
 ├── docs/

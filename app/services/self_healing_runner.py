@@ -147,9 +147,28 @@ def build_live_runner(
     dataforge_url: str = context_pack_publisher.DEFAULT_DATAFORGE_LOCAL_URL,
     neuroforge_url: str = "https://neuroforge-9lxc.onrender.com",
     max_source_age_minutes: int | None = None,
+    on_outcome: Callable[[CodeFixOutcome, Any, str | None], None] | None = None,
 ) -> SelfHealingRunner:
-    """Wire the real drivers: context-runtime + DataForge-Local + NeuroForge ladder + pact + publish."""
+    """Wire the real drivers: context-runtime + DataForge-Local + NeuroForge ladder + pact + publish.
+
+    ``on_outcome(outcome, response, error)`` is an optional observer notified after
+    each learning emission (``error`` is None on success). Emission is a
+    non-authoritative learning side-channel: a NeuroForge outage or a bad/missing
+    ingest key must NOT abort the authoritative propose path, so the emit is wrapped
+    fail-soft and the failure is surfaced via the observer rather than raised.
+    """
     from app.drivers import healing_publisher
+
+    def _emit_outcome(outcome: CodeFixOutcome) -> Any:
+        response: Any = None
+        error: str | None = None
+        try:
+            response = learning_client.emit_model_outcome(outcome, neuroforge_url=neuroforge_url)
+        except Exception as exc:  # noqa: BLE001 - reported via on_outcome, never fatal
+            error = f"{type(exc).__name__}: {exc}"
+        if on_outcome is not None:
+            on_outcome(outcome, response, error)
+        return response
 
     shaper = AiShaperService(
         generator=NeuroForgeGenerator(base_url=neuroforge_url),
@@ -161,5 +180,5 @@ def build_live_runner(
         ),
         shaper=shaper,
         publish_pack=lambda body: context_pack_publisher.publish_context_pack(body, dataforge_url=dataforge_url),
-        emit_outcome=lambda o: learning_client.emit_model_outcome(o, neuroforge_url=neuroforge_url),
+        emit_outcome=_emit_outcome,
     )
