@@ -58,6 +58,7 @@ class RunResult:
     governed: dict[str, Any]
     shape: ShapeResult
     pack_published: bool
+    pack_publish_error: str | None = None
 
 
 class SelfHealingRunner:
@@ -108,11 +109,19 @@ class SelfHealingRunner:
         pack_body = context_pack_publisher.build_pack_body(assembled, payloads)
         classification = self._with_bundle(classification, bundle_id)
 
-        # 3) publish the governed pack (durable + servable)
+        # 3) publish the governed pack (durable + servable). This is a durability /
+        # re-grounding side-channel (so NeuroForge can re-ground from the stored pack);
+        # it is NOT required for the authoritative learning outcome, which uses the
+        # in-memory pack below. So a publish failure (e.g. DataForge-Local's context-pack
+        # store endpoint not deployed) must NOT abort the run — record it and continue.
         pack_published = False
+        pack_publish_error: str | None = None
         if self._publish_pack is not None:
-            self._publish_pack(pack_body)
-            pack_published = True
+            try:
+                self._publish_pack(pack_body)
+                pack_published = True
+            except Exception as exc:  # noqa: BLE001 - non-authoritative side-channel
+                pack_publish_error = f"{type(exc).__name__}: {exc}"
 
         # 4) governed handle for verification + lineage
         governed = {
@@ -133,7 +142,13 @@ class SelfHealingRunner:
             classification=classification,
             outcome_emitter=self._emit_outcome,
         )
-        return RunResult(classification=classification, governed=governed, shape=shape, pack_published=pack_published)
+        return RunResult(
+            classification=classification,
+            governed=governed,
+            shape=shape,
+            pack_published=pack_published,
+            pack_publish_error=pack_publish_error,
+        )
 
     @staticmethod
     def _with_bundle(c: CodeFixClassification, bundle_id: str) -> CodeFixClassification:

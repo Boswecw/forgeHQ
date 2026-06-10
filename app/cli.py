@@ -32,6 +32,13 @@ from app.schemas.code_fix_outcome import CodeFixOutcome
 from app.services.self_healing_runner import RunResult, build_live_runner
 
 DEFAULT_CONTEXT_RUNTIME_URL = "http://127.0.0.1:8011"
+# A repo source file's mtime age is NOT a freshness signal for code-fix — a file
+# unchanged for months is still the current truth. context-runtime fail-closes on
+# sources older than max_source_age_minutes (7-day service default, meant for
+# cached/external context), which would reject normal repo files. Default to an
+# effectively-unlimited window; override with --max-source-age-minutes or
+# FORGEHQ_MAX_SOURCE_AGE_MINUTES.
+DEFAULT_MAX_SOURCE_AGE_MINUTES = 52_560_000  # ~100 years
 
 
 def _emit_json(payload: dict[str, Any]) -> None:
@@ -66,6 +73,7 @@ def _result_to_json(result: RunResult, captured: dict[str, Any]) -> dict[str, An
             "freshness_band": result.governed.get("freshness_band"),
         },
         "pack_published": result.pack_published,
+        "pack_publish_error": result.pack_publish_error,
         "shape": {"proposed": shape.proposed, "reason": shape.reason},
         "model_id": outcome.model_id if outcome is not None else None,
         "reward": outcome.reward if outcome is not None else None,
@@ -146,7 +154,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--neuroforge-url",
         default=os.getenv("FORGEHQ_NEUROFORGE_URL", DEFAULT_NEUROFORGE_URL),
     )
-    sh.add_argument("--max-source-age-minutes", type=int, default=None)
+    sh.add_argument(
+        "--max-source-age-minutes",
+        type=int,
+        default=int(os.getenv("FORGEHQ_MAX_SOURCE_AGE_MINUTES", str(DEFAULT_MAX_SOURCE_AGE_MINUTES))),
+    )
     sh.set_defaults(func=run_self_heal)
     return parser
 

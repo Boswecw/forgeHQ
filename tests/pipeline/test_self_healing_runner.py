@@ -97,3 +97,28 @@ def test_run_emits_outcome_even_when_not_proposed():
     assert res.shape.proposed is False        # fail-closed: not proposed
     assert proposed == []
     assert len(emitted) == 1 and emitted[0].reward == 0.0  # but the matrix still learns
+
+
+def test_pack_publish_failure_is_non_fatal():
+    # Publishing the governed pack is a durability side-channel; its failure must NOT
+    # abort the run or block the learning outcome.
+    emitted, proposed = [], []
+
+    def _boom(_body):
+        raise RuntimeError("DataForge-Local context-pack store unavailable (404)")
+
+    shaper = AiShaperService(
+        generator=_FakeNeuroForgeGen(),
+        verifier=_ok_verifier(),
+        publisher=lambda env: (proposed.append(env), {"status": "pending"})[1],
+    )
+    runner = SelfHealingRunner(
+        context=_FakeContext(), shaper=shaper, publish_pack=_boom, emit_outcome=emitted.append
+    )
+    res = runner.run(repository="forgehq", repo_root="/repo", target_file="app/x.py", raw_kind="trailing_whitespace")
+
+    assert res.pack_published is False
+    assert res.pack_publish_error and "404" in res.pack_publish_error
+    # the run still completed: proposed + emitted despite the pack-publish failure
+    assert res.shape.proposed is True and len(proposed) == 1
+    assert len(emitted) == 1 and emitted[0].model_id == "deepseek-chat"
