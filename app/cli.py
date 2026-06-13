@@ -29,6 +29,7 @@ from typing import Any
 
 from app.drivers.learning_client import DEFAULT_NEUROFORGE_URL
 from app.schemas.code_fix_outcome import CodeFixOutcome
+from app.services.self_healing_feed import run_feed
 from app.services.self_healing_runner import RunResult, build_live_runner
 
 DEFAULT_CONTEXT_RUNTIME_URL = "http://127.0.0.1:8011"
@@ -125,6 +126,73 @@ def run_self_heal(args: argparse.Namespace) -> int:
     return 3 if captured.get("error") else 0
 
 
+def _read_input(path: str | None) -> str:
+    if path:
+        with open(path, encoding="utf-8") as handle:
+            return handle.read()
+    return sys.stdin.read()
+
+
+def run_self_heal_feed(args: argparse.Namespace) -> int:
+    """Resolve caller-supplied admitted signals to targets and run the fix loop per target.
+
+    Input (``--input`` file or stdin): ``{"items": [{source_ref, node, gate_allowed, repo_root}]}``.
+    The caller (Forge_Command's tick) reads lineage nodes from DataForge-Local, supplies the
+    ForgeMath gate decision per candidate, and resolves ``repo_root`` from the registry repo-map.
+    """
+    try:
+        doc = json.loads(_read_input(args.input))
+    except Exception as exc:  # noqa: BLE001 - report, never crash the tick
+        _emit_json({"status": "error", "stage": "parse", "error": f"{type(exc).__name__}: {exc}"})
+        return 1
+
+    items = doc.get("items") if isinstance(doc, dict) else doc
+    if not isinstance(items, list):
+        _emit_json({"status": "error", "stage": "input", "error": "expected {\"items\": [...]} or a JSON list"})
+        return 1
+
+    builder_kwargs: dict[str, Any] = {
+        "context_runtime_url": args.context_runtime_url,
+        "neuroforge_url": args.neuroforge_url,
+        "max_source_age_minutes": args.max_source_age_minutes,
+    }
+    if args.dataforge_local_url:
+        builder_kwargs["dataforge_url"] = args.dataforge_local_url
+    runner = build_live_runner(**builder_kwargs)
+
+    feed = run_feed(items, runner=runner, publish=not args.no_publish)
+
+    ran_json = []
+    for item in feed.ran:
+        entry: dict[str, Any] = {
+            "source_ref": item.source_ref,
+            "repository": item.repository,
+            "target_file": item.target_file,
+            "ran": item.ran,
+            "error": item.error,
+        }
+        shape = getattr(item.result, "shape", None)
+        if shape is not None:
+            entry["proposed"] = getattr(shape, "proposed", None)
+        ran_json.append(entry)
+
+    _emit_json(
+        {
+            "status": "completed",
+            "counts": {
+                "ran": sum(1 for r in feed.ran if r.ran),
+                "failed": sum(1 for r in feed.ran if not r.ran),
+                "skipped": len(feed.skipped),
+            },
+            "ran": ran_json,
+            "skipped": [{"id": ident, "reason": reason} for ident, reason in feed.skipped],
+        }
+    )
+    # The batch completed; per-target failures are reported in-band (exit 0) so a single
+    # bad target never masks the rest. A hard input/build failure already returned 1 above.
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app", description="forgeHQ operational entrypoints.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -160,6 +228,32 @@ def build_parser() -> argparse.ArgumentParser:
         default=int(os.getenv("FORGEHQ_MAX_SOURCE_AGE_MINUTES", str(DEFAULT_MAX_SOURCE_AGE_MINUTES))),
     )
     sh.set_defaults(func=run_self_heal)
+
+    shf = sub.add_parser(
+        "self-heal-feed",
+        help="Resolve admitted signals (forge-eval evidence bundles) to targets and run the fix loop per target.",
+    )
+    shf.add_argument(
+        "--input",
+        default=None,
+        help='JSON: {"items":[{source_ref,node,gate_allowed,repo_root}]} (default: stdin).',
+    )
+    shf.add_argument("--no-publish", action="store_true", help="Shape + emit but do not publish.")
+    shf.add_argument(
+        "--context-runtime-url",
+        default=os.getenv("FORGEHQ_CONTEXT_RUNTIME_URL", DEFAULT_CONTEXT_RUNTIME_URL),
+    )
+    shf.add_argument("--dataforge-local-url", default=os.getenv("FORGEHQ_DATAFORGE_LOCAL_URL"))
+    shf.add_argument(
+        "--neuroforge-url",
+        default=os.getenv("FORGEHQ_NEUROFORGE_URL", DEFAULT_NEUROFORGE_URL),
+    )
+    shf.add_argument(
+        "--max-source-age-minutes",
+        type=int,
+        default=int(os.getenv("FORGEHQ_MAX_SOURCE_AGE_MINUTES", str(DEFAULT_MAX_SOURCE_AGE_MINUTES))),
+    )
+    shf.set_defaults(func=run_self_heal_feed)
     return parser
 
 

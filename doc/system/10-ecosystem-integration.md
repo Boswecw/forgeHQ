@@ -35,3 +35,15 @@ pack → generate (NeuroForge ladder, model captured) → pact-verify → emit `
 reads `NEUROFORGE_API_KEY` from the environment (ForgeCommand injects it at spawn, so the
 secret never lands in a forgeHQ file). Exit codes: `0` ran (emit ok/skipped), `1` hard
 failure (run raised), `3` ran but the learning emit failed (e.g. 401 ingest key).
+
+`python -m app self-heal-feed` (feed plan **P4b**) runs the fix loop from *real signals*
+instead of a hand-named target. Input (`--input` file or stdin):
+`{"items":[{source_ref, node, gate_allowed, repo_root}]}` — ForgeCommand's tick reads
+forge-eval evidence-bundle lineage nodes from DataForge-Local, supplies the ForgeMath
+`proposal_candidate_allowed` gate per candidate, and resolves `repo_root` from the registry
+repo-map. `app/services/signal_target_resolver.py` (Tier-A) maps each gated evidence-bundle
+node → one `(repository, target_file, raw_kind)` per evaluated file (`input_contract.target_refs[]`),
+and `app/services/self_healing_feed.py` runs `SelfHealingRunner` per target. Transport-free,
+fail-closed (ungated / no-file / no-repo_root signals are skipped with a recorded reason);
+prints a JSON batch summary (`ran` / `skipped` with reasons). forgeHQ never derives local
+paths — `repo_root` is caller-supplied.
