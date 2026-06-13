@@ -435,6 +435,8 @@ to DataForge has been implemented yet.
 | Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
 | Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
 | Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
+| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`; transport-free, fail-closed |
+| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals → run `SelfHealingRunner` per target (injectable); per-target error capture |
 | Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
 | Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
 | Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |
@@ -496,6 +498,18 @@ pack → generate (NeuroForge ladder, model captured) → pact-verify → emit `
 reads `NEUROFORGE_API_KEY` from the environment (ForgeCommand injects it at spawn, so the
 secret never lands in a forgeHQ file). Exit codes: `0` ran (emit ok/skipped), `1` hard
 failure (run raised), `3` ran but the learning emit failed (e.g. 401 ingest key).
+
+`python -m app self-heal-feed` (feed plan **P4b**) runs the fix loop from *real signals*
+instead of a hand-named target. Input (`--input` file or stdin):
+`{"items":[{source_ref, node, gate_allowed, repo_root}]}` — ForgeCommand's tick reads
+forge-eval evidence-bundle lineage nodes from DataForge-Local, supplies the ForgeMath
+`proposal_candidate_allowed` gate per candidate, and resolves `repo_root` from the registry
+repo-map. `app/services/signal_target_resolver.py` (Tier-A) maps each gated evidence-bundle
+node → one `(repository, target_file, raw_kind)` per evaluated file (`input_contract.target_refs[]`),
+and `app/services/self_healing_feed.py` runs `SelfHealingRunner` per target. Transport-free,
+fail-closed (ungated / no-file / no-repo_root signals are skipped with a recorded reason);
+prints a JSON batch summary (`ran` / `skipped` with reasons). forgeHQ never derives local
+paths — `repo_root` is caller-supplied.
 
 ---
 
