@@ -1,7 +1,7 @@
 # forgeHQ P4b — Signal→Target Resolver (design)
 
-**Status:** Candidate (operator approval required before build)
-**Date:** 2026-06-13
+**Status:** Tier-A (P4b-1) BUILT + merged; Tier-B (P4b-2) BUILT (`feat/p4b2-tier-b-resolver`). Tier-B FC-side wiring + cloud proposals (P4b-3) remain.
+**Date:** 2026-06-13 (Tier-B added 2026-06-14)
 **Extends:** `docs/Plans/forge_hq_feed_architecture_plan.md` (this is the first concrete piece of **P4b — de-noop the shaping stages**).
 **Doctrine:** forgeHQ stays **transport-free, non-authoritative, fail-closed, phase-bounded** (CLAUDE.md). It proposes; it never mints upstream truth, performs HTTP, or owns persistence.
 
@@ -65,8 +65,13 @@ ResolvedTarget {
 ## 5. Phasing (each shippable, fail-closed)
 
 - **P4b-1** — Tier-A direct-payload resolver for ONE narrow, confirmed node class end-to-end (real signal → resolved target → `SelfHealingRunner` → real proposal in the hub). Proves the join.
-- **P4b-2** — Tier-B bounded lineage walk for classes without a direct file.
+- **P4b-2** — Tier-B bounded lineage walk for classes without a direct file. **BUILT** (`resolve_via_downstream_walk`): downstream BFS over the allowlisted `produced` edge (the real `forge_eval_run --produced--> forge_eval_evidence_bundle`), bounded by `max_hops`/`max_nodes`, cycle-safe, delegating each reached bundle to Tier-A; per-bundle gate (`gate_by_node_id`, missing = fail-closed); skips `no_walk_path` / `walk_budget_exhausted`; targets tagged `resolution="walked"`. Feed item opt-in via `subgraph_nodes` + `subgraph_edges`. **FC-side wiring** (FC's tick passing a bundle's *run* node + downstream subgraph instead of seeding bundles directly) is the remaining follow-up — today the live tick seeds bundle nodes = Tier-A.
 - **P4b-3** — cloud-proposal resolution (advisory).
+
+### Resolved open questions (from §6, settled at Tier-B build)
+- **Q2 (edge_type allowlist):** confirmed `produced` is the forge-eval `run→bundle` edge (`forge_eval/lineage/emitter.py`: `build_edge(..., edge_type="produced")`, source=run, target=bundle). Tier-B's default allowlist is `{"produced"}`; configurable per call.
+- **Q3 (who supplies the walk subgraph):** the caller (FC's tick) supplies `nodes` + `edges` (its bounded downstream read). forgeHQ stays transport-free; it walks the supplied subgraph, never fetches.
+- **Architectural note:** the bundle *lineage* node is identity-only — its file `target_refs` live in the bundle **artifact** the caller resolves (via `artifact_ref`) and inlines into the supplied node. So Tier-B nodes must carry artifact-enriched bundle payloads, exactly as Tier-A items already do.
 - Throughout: skip-with-reason telemetry so the operator sees *why* a signal didn't produce a fix.
 
 ---

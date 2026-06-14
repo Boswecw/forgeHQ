@@ -75,3 +75,41 @@ def test_runner_error_on_one_target_does_not_abort_batch():
     by_file = {r.target_file: r for r in result.ran}
     assert by_file["app/a.py"].ran is False and "boom" in (by_file["app/a.py"].error or "")
     assert by_file["app/b.py"].ran is True
+
+
+def _run_seed():
+    return {"node_id": "run-1", "node_type": "forge_eval_run", "payload": {"kind": "forge_eval_run"}}
+
+
+def test_tier_b_item_walks_subgraph_and_runs_the_loop():
+    """An item carrying a downstream subgraph resolves via Tier-B (walk → bundle)."""
+    runner = _FakeRunner()
+    item = {
+        "source_ref": "forgeeval://forge_eval_run/run-1",
+        "node": _run_seed(),
+        "repo_root": "/repo",
+        "subgraph_nodes": [_run_seed(), _bundle()],
+        "subgraph_edges": [{"source_node_id": "run-1", "target_node_id": "node-1", "edge_type": "produced"}],
+        "gate_by_node_id": {"node-1": True},
+    }
+    result = run_feed([item], runner=runner, publish=False)
+    assert [c["target_file"] for c in runner.calls] == ["app/a.py", "app/b.py"]
+    assert all(c["repo_root"] == "/repo" for c in runner.calls)
+    assert [(r.target_file, r.ran) for r in result.ran] == [("app/a.py", True), ("app/b.py", True)]
+    assert result.skipped == ()
+
+
+def test_tier_b_item_with_ungated_bundle_is_skipped():
+    runner = _FakeRunner()
+    item = {
+        "source_ref": "forgeeval://forge_eval_run/run-1",
+        "node": _run_seed(),
+        "repo_root": "/repo",
+        "subgraph_nodes": [_run_seed(), _bundle()],
+        "subgraph_edges": [{"source_node_id": "run-1", "target_node_id": "node-1", "edge_type": "produced"}],
+        "gate_by_node_id": {"node-1": False},
+    }
+    result = run_feed([item], runner=runner)
+    assert runner.calls == []
+    assert result.ran == ()
+    assert result.skipped == (("node-1", SKIP_GATE_NOT_ALLOWED),)
