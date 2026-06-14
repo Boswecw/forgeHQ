@@ -193,6 +193,50 @@ def run_self_heal_feed(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_health(_args: argparse.Namespace) -> int:
+    """Bounded, producer-owned self-check for the ecosystem-health topology.
+
+    forgeHQ is a CLI producer with no HTTP surface, so this is how a downstream consumer
+    (ForgeCommand's `/ecosystem-health`) gets a *real* health signal rather than a fabricated one.
+    Verifies the core self-healing building blocks import; reports an honest ok/degraded status.
+    Stdlib-only; prints one JSON object to stdout. Exit 0 = ok, 1 = degraded.
+    """
+    import importlib
+    from datetime import datetime, timezone
+
+    checks: dict[str, str] = {}
+    status = "ok"
+    for label, module in (
+        ("self_healing_runner", "app.services.self_healing_runner"),
+        ("code_fix_shaper", "app.services.code_fix_shaper"),
+        ("signal_target_resolver", "app.services.signal_target_resolver"),
+        ("healing_publisher", "app.drivers.healing_publisher"),
+    ):
+        try:
+            importlib.import_module(module)
+            checks[label] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            checks[label] = f"error: {type(exc).__name__}"
+            status = "degraded"
+
+    try:
+        version = importlib.metadata.version("forgehq")
+    except Exception:  # noqa: BLE001
+        version = "unknown"
+
+    _emit_json(
+        {
+            "service": "forgeHQ",
+            "status": status,
+            "version": version,
+            "role": "self-healing shaper (CLI producer; no HTTP surface)",
+            "checks": checks,
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+    return 0 if status == "ok" else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app", description="forgeHQ operational entrypoints.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -254,6 +298,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=int(os.getenv("FORGEHQ_MAX_SOURCE_AGE_MINUTES", str(DEFAULT_MAX_SOURCE_AGE_MINUTES))),
     )
     shf.set_defaults(func=run_self_heal_feed)
+
+    hp = sub.add_parser("health", help="Bounded self-check for the ecosystem-health topology.")
+    hp.set_defaults(func=run_health)
     return parser
 
 
