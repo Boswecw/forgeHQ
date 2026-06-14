@@ -26,8 +26,8 @@ to DataForge has been implemented yet.
 | Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
 | Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
 | Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
-| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`; transport-free, fail-closed |
-| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals → run `SelfHealingRunner` per target (injectable); per-target error capture |
+| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`. Tier-B (P4b-2): bounded **downstream** lineage walk from a non-file seed (e.g. `forge_eval_run`) over allowlisted `produced` edges → bundle node(s) → Tier-A. Transport-free, fail-closed |
+| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals (Tier-A bundle item, or Tier-B item with `subgraph_nodes`/`subgraph_edges`/`gate_by_node_id`) → run `SelfHealingRunner` per target (injectable); per-target error capture |
 | Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
 | Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
 | Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |

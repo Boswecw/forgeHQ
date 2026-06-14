@@ -47,3 +47,16 @@ and `app/services/self_healing_feed.py` runs `SelfHealingRunner` per target. Tra
 fail-closed (ungated / no-file / no-repo_root signals are skipped with a recorded reason);
 prints a JSON batch summary (`ran` / `skipped` with reasons). forgeHQ never derives local
 paths — `repo_root` is caller-supplied.
+
+**Tier-B (P4b-2) — downstream lineage walk.** For a seed node that carries no file
+(e.g. a `forge_eval_run` summarising many files), `resolve_via_downstream_walk` walks the
+caller-supplied bounded **downstream** subgraph along allowlisted `ImpactEdge.v1` edge types
+(`produced`, the real `forge_eval_run --produced--> forge_eval_evidence_bundle` edge) to the
+evidence-bundle node(s) that DO carry `(repo, file)`, then delegates each to Tier-A. Downstream-only
+matches DataForge-Local's traversal direction. A Tier-B feed item additionally supplies
+`subgraph_nodes` + `subgraph_edges` and `gate_by_node_id` (the ForgeMath gate per bundle, missing =
+fail-closed); a bundle seed delegates straight to Tier-A. Bounded (`max_hops`/`max_nodes`, cycle-safe)
+and fail-closed: a seed that reaches no bundle is skipped with `no_walk_path` (fully explored) or
+`walk_budget_exhausted` (bound hit first), never a guessed file. Resolved targets are tagged
+`resolution="walked"` for honest provenance. (FC-side wiring of Tier-B subgraphs into its tick is a
+follow-up; today the live tick seeds bundle nodes directly = Tier-A.)

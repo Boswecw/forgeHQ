@@ -435,8 +435,8 @@ to DataForge has been implemented yet.
 | Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
 | Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
 | Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
-| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`; transport-free, fail-closed |
-| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals → run `SelfHealingRunner` per target (injectable); per-target error capture |
+| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`. Tier-B (P4b-2): bounded **downstream** lineage walk from a non-file seed (e.g. `forge_eval_run`) over allowlisted `produced` edges → bundle node(s) → Tier-A. Transport-free, fail-closed |
+| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals (Tier-A bundle item, or Tier-B item with `subgraph_nodes`/`subgraph_edges`/`gate_by_node_id`) → run `SelfHealingRunner` per target (injectable); per-target error capture |
 | Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
 | Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
 | Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |
@@ -510,6 +510,19 @@ and `app/services/self_healing_feed.py` runs `SelfHealingRunner` per target. Tra
 fail-closed (ungated / no-file / no-repo_root signals are skipped with a recorded reason);
 prints a JSON batch summary (`ran` / `skipped` with reasons). forgeHQ never derives local
 paths — `repo_root` is caller-supplied.
+
+**Tier-B (P4b-2) — downstream lineage walk.** For a seed node that carries no file
+(e.g. a `forge_eval_run` summarising many files), `resolve_via_downstream_walk` walks the
+caller-supplied bounded **downstream** subgraph along allowlisted `ImpactEdge.v1` edge types
+(`produced`, the real `forge_eval_run --produced--> forge_eval_evidence_bundle` edge) to the
+evidence-bundle node(s) that DO carry `(repo, file)`, then delegates each to Tier-A. Downstream-only
+matches DataForge-Local's traversal direction. A Tier-B feed item additionally supplies
+`subgraph_nodes` + `subgraph_edges` and `gate_by_node_id` (the ForgeMath gate per bundle, missing =
+fail-closed); a bundle seed delegates straight to Tier-A. Bounded (`max_hops`/`max_nodes`, cycle-safe)
+and fail-closed: a seed that reaches no bundle is skipped with `no_walk_path` (fully explored) or
+`walk_budget_exhausted` (bound hit first), never a guessed file. Resolved targets are tagged
+`resolution="walked"` for honest provenance. (FC-side wiring of Tier-B subgraphs into its tick is a
+follow-up; today the live tick seeds bundle nodes directly = Tier-A.)
 
 ---
 
