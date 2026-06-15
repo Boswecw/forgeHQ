@@ -26,7 +26,11 @@ from app.drivers import context_client, context_pack_publisher, learning_client
 from app.drivers.neuroforge_generator import NeuroForgeGenerator
 from app.schemas.code_fix_classification import CodeFixClassification
 from app.schemas.code_fix_outcome import CodeFixOutcome
-from app.services.ai_shaper_service import AiShaperService, ShapeResult
+from app.services.ai_shaper_service import (
+    AiShaperService,
+    DeterministicHygieneGenerator,
+    ShapeResult,
+)
 from app.services.code_fix_classifier import CodeFixClassifier
 
 
@@ -187,6 +191,10 @@ def build_live_runner(
 
     shaper = AiShaperService(
         generator=NeuroForgeGenerator(base_url=neuroforge_url),
+        # Hygiene fixes (whitespace/EOF newline) are deterministic; the model echoes
+        # them back unchanged (fail-closed no-op), so route them to the deterministic
+        # generator while everything else goes through NeuroForge's ladder.
+        hygiene_generator=DeterministicHygieneGenerator(),
         publisher=lambda env: healing_publisher.publish_healing_proposal(env, dataforge_url=dataforge_url),
     )
     return SelfHealingRunner(

@@ -12,6 +12,7 @@ from app.services.ai_shaper_service import (
     DeterministicHygieneGenerator,
     ShaperError,
 )
+from app.services.code_fix_classifier import CodeFixClassifier
 from app.services.pact_verification_bridge import PactVerificationBridge
 
 
@@ -181,3 +182,69 @@ def test_fetches_pack_by_id_when_not_supplied():
     result = svc.shape(repository="forgehq", file_path="app/x.py", governed=_governed())
     assert result.proposed is True
     assert fetched["id"] == "ctxb_1122676813da3fb5"
+
+
+# --------------------------------------------------------------------------- #
+# Hygiene routing: hygiene-kind jobs use the dedicated deterministic generator,
+# everything else uses the default (model) generator. Models echo invisible-
+# whitespace fixes back unchanged → fail-closed, so hygiene must not go to them.
+# --------------------------------------------------------------------------- #
+
+
+class _SpyGenerator:
+    """Records calls; returns a fixed content (or None for a no-op)."""
+
+    def __init__(self, content):
+        self.calls = 0
+        self._content = content
+
+    def generate(self, *, repository, file_path, current_content, directive, pack, min_tier=None):
+        self.calls += 1
+        return self._content
+
+
+def _classify(raw_kind: str):
+    return CodeFixClassifier().classify(file_path="app/x.py", raw_kind=raw_kind)
+
+
+def test_hygiene_kind_routes_to_hygiene_generator():
+    model = _SpyGenerator("SHOULD NOT BE USED")
+    hygiene = DeterministicHygieneGenerator()
+    pub, captured = _capturing_publisher()
+    svc = AiShaperService(
+        generator=model, hygiene_generator=hygiene, verifier=_ok_verifier(), publisher=pub,
+    )
+    result = svc.shape(
+        repository="forgehq", file_path="app/x.py", governed=_governed(),
+        pack=_dirty_pack(), classification=_classify("missing_trailing_newline"),
+    )
+    assert result.proposed is True
+    assert model.calls == 0  # the model generator is bypassed for hygiene
+    assert captured["envelope"]["payload"]["proposed_edit"]["content"].endswith("return a + b\n")
+
+
+def test_non_hygiene_kind_uses_default_generator():
+    model = _SpyGenerator("def add(a, b):\n    return a + b  # model fix\n")
+    hygiene = _SpyGenerator("SHOULD NOT BE USED")
+    svc = AiShaperService(
+        generator=model, hygiene_generator=hygiene, verifier=_ok_verifier(),
+    )
+    result = svc.shape(
+        repository="forgehq", file_path="app/x.py", governed=_governed(),
+        pack=_dirty_pack(), classification=_classify("lint"), publish=False,
+    )
+    assert result.proposed is True
+    assert model.calls == 1
+    assert hygiene.calls == 0
+
+
+def test_hygiene_without_dedicated_generator_falls_back_to_default():
+    # Back-compat: no hygiene_generator supplied → hygiene jobs use the default.
+    model = _SpyGenerator("def add(a, b):\n    return a + b  # model fix\n")
+    svc = AiShaperService(generator=model, verifier=_ok_verifier())
+    result = svc.shape(
+        repository="forgehq", file_path="app/x.py", governed=_governed(),
+        pack=_dirty_pack(), classification=_classify("missing_trailing_newline"), publish=False,
+    )
+    assert result.proposed is True
+    assert model.calls == 1

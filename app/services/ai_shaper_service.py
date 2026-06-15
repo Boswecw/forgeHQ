@@ -36,6 +36,13 @@ from app.services.code_fix_shaper import (
 )
 from app.services.pact_verification_bridge import PactVerificationBridge, grounding_ref
 
+# The classifier's FixKind for whitespace/EOF-newline fixes (see
+# code_fix_classifier._KIND_RULES). These are deterministically fixable by
+# CodeFixShaper, and cloud models tend to echo such invisible-whitespace edits
+# back unchanged → fail-closed no-op. So when a hygiene generator is supplied,
+# the shaper routes hygiene-kind jobs to it instead of the model generator.
+HYGIENE_KIND = "hygiene"
+
 
 class ShaperError(ValueError):
     """Raised when inputs are structurally invalid — fail closed."""
@@ -124,11 +131,15 @@ class AiShaperService:
         self,
         *,
         generator: CodeFixGenerator | None = None,
+        hygiene_generator: CodeFixGenerator | None = None,
         verifier: PactVerificationBridge | None = None,
         pack_fetcher: Callable[[str], dict[str, Any]] | None = None,
         publisher: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> None:
         self._generator = generator or DeterministicHygieneGenerator()
+        # Optional dedicated generator for hygiene-kind jobs. When set, hygiene
+        # fixes route here (deterministic) instead of the default/model generator.
+        self._hygiene_generator = hygiene_generator
         self._verifier = verifier or PactVerificationBridge()
         self._fetch_pack = pack_fetcher
         self._publish = publisher
@@ -174,7 +185,16 @@ class AiShaperService:
         # 1) generate from the precomputed governed context. The risk floor (from the
         # classification) is NeuroForge's native min_tier — the ladder still routes.
         min_tier = classification.min_tier if classification is not None else None
+        # Hygiene fixes (whitespace/EOF newline) are deterministically fixable and
+        # cloud models echo them back unchanged → route them to the deterministic
+        # hygiene generator when one is supplied; everything else uses the default.
         gen = self._generator
+        if (
+            self._hygiene_generator is not None
+            and classification is not None
+            and classification.kind == HYGIENE_KIND
+        ):
+            gen = self._hygiene_generator
         if hasattr(gen, "generate_with_metadata"):
             res = gen.generate_with_metadata(
                 file_path=file_path,
