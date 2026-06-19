@@ -1,4 +1,4 @@
-## 15. Error Handling Contract
+# §12 — Error Handling Contract
 
 *Last updated: 2026-04-04 (Phases 2–6 error classes documented)*
 

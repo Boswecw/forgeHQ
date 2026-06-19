@@ -1,4 +1,4 @@
-## 11. Database Schema
+# §10 — Database Schema
 
 *Last updated: 2026-04-04 (in-memory persistence stubs implemented)*
 

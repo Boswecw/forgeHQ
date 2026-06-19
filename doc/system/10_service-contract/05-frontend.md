@@ -1,4 +1,4 @@
-## 7. Frontend
+# §5 — Frontend
 
 forgeHQ currently implements no frontend surface.
 

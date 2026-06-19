@@ -1,4 +1,4 @@
-## 8. API Layer
+# §6 — API Layer
 
 forgeHQ currently exposes no HTTP or RPC API.
 

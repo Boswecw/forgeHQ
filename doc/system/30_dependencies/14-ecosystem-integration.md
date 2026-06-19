@@ -1,4 +1,4 @@
-## 10. Ecosystem Integration
+# §14 — Ecosystem Integration
 
 *Last updated: 2026-06-10 (producer entrypoint + NeuroForge model-learning edge)*
 

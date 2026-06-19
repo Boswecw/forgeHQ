@@ -1,4 +1,4 @@
-## 2. Architecture
+# §2 — Architecture
 
 *Last updated: 2026-04-04 (Phases 2–6 implemented)*
 

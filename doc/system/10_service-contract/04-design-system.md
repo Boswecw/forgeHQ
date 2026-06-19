@@ -1,4 +1,4 @@
-## 6. Design System
+# §4 — Design System
 
 forgeHQ currently has no user-facing frontend and therefore no UI design token system.
 Its current design surface is documentation and contract language.

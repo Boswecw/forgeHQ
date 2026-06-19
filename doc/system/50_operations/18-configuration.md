@@ -1,4 +1,4 @@
-## 5. Configuration & Environment
+# §18 — Configuration & Environment
 
 The current repo does not define service-runtime environment variables because no service runtime is implemented yet.
 One optional QA tooling override is supported for test-runner discovery.

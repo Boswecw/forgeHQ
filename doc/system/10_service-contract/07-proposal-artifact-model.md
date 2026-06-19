@@ -1,4 +1,4 @@
-## 13. Proposal Artifact Model
+# §7 — Proposal Artifact Model
 
 forgeHQ artifact vocabulary is implemented as explicit enum-backed families.
 Every current artifact family is non-authoritative by posture,

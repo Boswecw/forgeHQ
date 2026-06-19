@@ -1,4 +1,4 @@
-## 1. Overview & Philosophy
+# §1 — Overview & Philosophy
 
 *Last updated: 2026-04-04 (Phase 6: ForgeCommand read models and read model service added)*
 

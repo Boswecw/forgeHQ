@@ -1,4 +1,4 @@
-## 12. AI Integration
+# §11 — AI Integration
 
 forgeHQ currently has no runtime AI inference surface.
 AI usage is limited to AI-assisted software development against the repository documentation stack.

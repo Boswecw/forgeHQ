@@ -1,4 +1,4 @@
-## 14. Pipeline & Reviewability
+# §8 — Pipeline & Reviewability
 
 *Last updated: 2026-04-04 (Phases 2–6 implemented)*
 

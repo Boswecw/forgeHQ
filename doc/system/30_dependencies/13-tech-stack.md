@@ -1,4 +1,4 @@
-## 3. Tech Stack
+# §13 — Tech Stack
 
 The current repo uses a minimal stack because only the governance contract slice is implemented.
 

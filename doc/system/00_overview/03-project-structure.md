@@ -1,4 +1,4 @@
-## 4. Project Structure
+# §3 — Project Structure
 
 The current repo structure is intentionally narrow.
 It reflects a contract-first bootstrap rather than a full service implementation.

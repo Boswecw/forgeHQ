@@ -11,7 +11,7 @@
 | Worker Contracts | Worker identities and emission boundaries | `app/domain/workers/enums.py` | Keeps generator and critic lanes structurally independent |
 | Schema Stubs | Phase 1 artifact and run scaffolding | `app/schemas/` | Defines typed non-authoritative artifact placeholders and shaping runs |
 | Orchestration Skeleton | Stage validation and no-op progression | `app/orchestration/` | Enforces ordered stage progression without adding live runtime semantics |
-| Documentation Assembly | Canonical repo context | `doc/system/`, `SYSTEM.md`, `scripts/context-bundle.sh` | Provides the build surface for repo truth |
+| Documentation Assembly | Canonical repo context | `doc/system/`, `doc/FRGSYSTEM.md`, `scripts/context-bundle.sh` | Provides the build surface for repo truth |
 | QA Foundation | QA planning, templates, and executable checks | `FORGEHQ_COMPREHENSIVE_TEST_PLAN.md`, `docs/qa/`, `scripts/qa-*.sh` | Keeps QA claims aligned with actual repo maturity |
 | Imported BDS Protocols | Cross-ecosystem doctrine reference | `docs/reference/bds/` | Reference-only company-core protocols that inform repo standards |
 | Contract Tests | Governance, documentation, and pipeline verification | `tests/contract/`, `tests/pipeline/`, `tests/workers/` | Guards bounded repo behavior |
@@ -34,7 +34,7 @@
 - Phase 1 stage-routing logic lives under `app/orchestration/`.
 - Imported ecosystem doctrine references live under `docs/reference/bds/`.
 - QA support docs live under `docs/qa/`.
-- Root `SYSTEM.md` is a build artifact assembled from `doc/system/` parts.
+- Root `doc/FRGSYSTEM.md` is a build artifact assembled from `doc/system/` parts.
 - Root `FORGEHQ_COMPREHENSIVE_TEST_PLAN.md` is the current QA plan for repo maturity.
 - New tests live under `tests/`.
 - Repo automation scripts live under `scripts/`.
@@ -66,11 +66,11 @@
 - Run `scripts/qa-regression-smoke.sh` for the lightweight regression gate.
 - Keep contract tests for artifact families, worker boundaries, stage routing, and documentation build surfaces green.
 - Keep the QA plan and applicability matrix honest; do not invent T2-T8 coverage before those surfaces exist.
-- Update `doc/system/` and rebuild `SYSTEM.md` whenever repo truth changes.
+- Update `doc/system/` and rebuild `doc/FRGSYSTEM.md` whenever repo truth changes.
 
 ## Change Protocol
 
-- Edit `doc/system/` parts, never root `SYSTEM.md`, then run `doc/system/BUILD.sh`.
+- Edit `doc/system/` parts, never `doc/FRGSYSTEM.md`, then run `doc/system/BUILD.sh`.
 - Keep changes bounded to the current implementation phase.
 - Prefer patches over broad rewrites.
 - If architectural truth changes, update code contracts, `docs/`, and `doc/system/` in the same turn.

@@ -1,4 +1,4 @@
-## 17. Handover / Migration Notes
+# §20 — Handover / Migration Notes
 
 *Last updated: 2026-04-04 (Phases 0–6 complete)*
 
