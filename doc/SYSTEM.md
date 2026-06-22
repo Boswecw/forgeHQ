@@ -1,31 +1,86 @@
-# forgeHQ — Complete System Reference
+        # forgeHQ - Compiled System Reference
 
-> Bounded proposal-generation and confidence-shaping subsystem for the BDS ecosystem.
-> "Reviewable candidates without counterfeit authority."
+        **Designation:** FRG
+        **Document role:** Canonical compiled technical reference for forgeHQ
+        **Source:** `doc/system/`
+        **Build command:** `bash doc/system/BUILD.sh`
+        **Document version:** 2.0 (2026-06-22) - canonical compliance migration
+        **Protocol:** BDS Documentation Protocol v2.0; BDS Repo Documentation System Canonical Compliance Standard
 
-**Document version:** 1.5 (2026-04-04) — Phase 6: ForgeCommand read models and read model service
+        > **Generated artifact warning:** `doc/FRGSYSTEM.md` is assembled output. Edit
+        > the source modules under `doc/system/` and rebuild. Hand edits to the
+        > compiled artifact are overwritten by the next build.
+
+        Assembly contract:
+
+        - Command: `bash doc/system/BUILD.sh`
+        - Validation: `bash doc/system/validate_snapshots.sh` runs during assembly
+        - Primary output: `doc/FRGSYSTEM.md`
+
+        This `doc/system/` tree is the canonical source of truth for forgeHQ. It uses
+        explicit **truth classes**: canonical facts define repo role, authority
+        boundaries, contract behavior, runtime behavior, and verification doctrine;
+        snapshot facts are dated, audit-derived counts and current implementation
+        inventory that may drift between audits.
+
+        | Part | File | Contents |
+        | --- | --- | --- |
+        | §1 | `00_overview/00-overview.md` | Overview |
+| §2 | `00_overview/01-architecture.md` | Architecture |
+| §3 | `00_overview/01-overview-philosophy.md` | 1. Overview & Philosophy |
+| §4 | `00_overview/02-architecture.md` | 2. Architecture |
+| §5 | `00_overview/04-project-structure.md` | 4. Project Structure |
+| §6 | `10_service-contract/08-api-layer.md` | 8. API Layer |
+| §7 | `10_service-contract/10-ecosystem-integration.md` | 10. Ecosystem Integration |
+| §8 | `10_service-contract/13-proposal-artifact-model.md` | 13. Proposal Artifact Model |
+| §9 | `10_service-contract/14-pipeline-reviewability.md` | 14. Pipeline & Reviewability |
+| §10 | `20_runtime/07-frontend.md` | 7. Frontend |
+| §11 | `20_runtime/09-backend.md` | 9. Backend |
+| §12 | `20_runtime/11-database-schema.md` | 11. Database Schema |
+| §13 | `20_runtime/12-ai-integration.md` | 12. AI Integration |
+| §14 | `20_runtime/15-error-handling.md` | 15. Error Handling Contract |
+| §15 | `30_dependencies/03-tech-stack.md` | 3. Tech Stack |
+| §16 | `30_dependencies/06-design-system.md` | 6. Design System |
+| §17 | `40_governance/10-scope.md` | Scope |
+| §18 | `40_governance/30-governance.md` | Governance |
+| §19 | `40_governance/40-change-control.md` | Change Control |
+| §20 | `50_operations/05-configuration.md` | 5. Configuration & Environment |
+| §21 | `50_operations/16-testing-infrastructure.md` | 16. Testing Infrastructure |
+| §22 | `50_operations/17-handover-migration-notes.md` | 17. Handover / Migration Notes |
+| §23 | `99_appendices/20-structure.md` | Structure |
+| §24 | `99_appendices/90-appendices.md` | Appendices |
+
+        ## Quick Assembly
+
+        ```bash
+        bash doc/system/BUILD.sh
+        ```
 
 ---
 
-## Table of Contents
+# Overview
 
-1. [Overview & Philosophy](#1-overview--philosophy)
-2. [Architecture](#2-architecture)
-3. [Tech Stack](#3-tech-stack)
-4. [Project Structure](#4-project-structure)
-5. [Configuration & Environment](#5-configuration--environment)
-6. [Design System](#6-design-system)
-7. [Frontend](#7-frontend)
-8. [API Layer](#8-api-layer)
-9. [Backend](#9-backend)
-10. [Ecosystem Integration](#10-ecosystem-integration)
-11. [Database Schema](#11-database-schema)
-12. [AI Integration](#12-ai-integration)
-13. [Proposal Artifact Model](#13-proposal-artifact-model)
-14. [Pipeline & Reviewability](#14-pipeline--reviewability)
-15. [Error Handling Contract](#15-error-handling-contract)
-16. [Testing Infrastructure](#16-testing-infrastructure)
-17. [Handover / Migration Notes](#17-handover--migration-notes)
+**Document version:** 1.0 (bootstrap scaffold)
+
+System identity, role, and boundary with the rest of the Forge ecosystem.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Architecture
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+High-level architecture, authority posture, and surface ownership.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
 
 ---
 
@@ -155,39 +210,6 @@ ForgeCommand (read models implemented; API surface pending)
 
 ---
 
-## 3. Tech Stack
-
-The current repo uses a minimal stack because only the governance contract slice is implemented.
-
-### 3.1 Runtime and Test Stack
-
-| Layer | Current choice | Notes |
-| --- | --- | --- |
-| Language | Python 3.12 | Current local interpreter |
-| Test framework | `pytest==7.4.3` | Repo contract tests |
-| Shell scripting | Bash | Documentation assembly and context-bundle scripts |
-| Docs format | Markdown | Canonical repo-reference format |
-
-### 3.2 Python Standard Library Usage
-
-| Module | Current use |
-| --- | --- |
-| `enum` | `StrEnum` vocabularies for bounded contracts |
-| `dataclasses` | Frozen contract helpers |
-| `types.MappingProxyType` | Immutable registry views |
-
-### 3.3 Not Yet Present
-
-| Category | Current status |
-| --- | --- |
-| Web framework | Not implemented |
-| ORM/migrations | Not implemented |
-| Database driver | Not implemented |
-| Frontend framework | Not implemented |
-| Runtime AI provider SDK | Not implemented |
-
----
-
 ## 4. Project Structure
 
 The current repo structure is intentionally narrow.
@@ -200,17 +222,20 @@ forgeHQ/
 ├── AGENTS.md
 ├── FORGEHQ_COMPREHENSIVE_TEST_PLAN.md
 ├── app/
+│   ├── __main__.py          # `python -m app` -> producer CLI
+│   ├── cli.py               # producer entrypoint (self-heal); spawned by ForgeCommand
 │   ├── domain/
 │   │   ├── artifacts/
 │   │   ├── pipeline/
 │   │   ├── reviewability/
 │   │   ├── signals/
 │   │   └── workers/
+│   ├── drivers/             # live edges (learning/context/pact/publish clients)
 │   ├── orchestration/
 │   ├── persistence/
 │   ├── read_models/
 │   ├── schemas/
-│   └── services/
+│   └── services/            # incl. self_healing_runner.build_live_runner
 ├── doc/
 │   └── system/
 ├── docs/
@@ -256,89 +281,6 @@ forgeHQ/
 
 ---
 
-## 5. Configuration & Environment
-
-The current repo does not define service-runtime environment variables because no service runtime is implemented yet.
-One optional QA tooling override is supported for test-runner discovery.
-
-### 5.1 Environment Variables
-
-| Variable | Type | Default | Reader | Status |
-| --- | --- | --- | --- | --- |
-| `PYTEST_RUNNER` | path string | auto-detected | `scripts/qa-mode-a-preflight.sh`, `scripts/qa-regression-smoke.sh` | Optional override for the pytest executable |
-
-### 5.2 Operational Commands
-
-| Command | Purpose |
-| --- | --- |
-| `python3 -m pytest` | Run repo tests when `pytest` is installed locally |
-| `doc/system/BUILD.sh` | Rebuild root `SYSTEM.md` |
-| `scripts/context-bundle.sh --list` | Show selective doc-loading options |
-| `scripts/qa-mode-a-preflight.sh` | Execute Mode A T0 QA checks for current repo maturity |
-| `scripts/qa-regression-smoke.sh` | Run the lightweight regression smoke suite |
-
-### 5.3 Configuration Posture
-
-- Service runtime configuration is intentionally absent until a service slice exists.
-- QA tooling may use `PYTEST_RUNNER` to pin a specific pytest executable while the repo remains environment-light.
-- When service configuration appears later, every variable must be documented here with type, default, and owner.
-
----
-
-## 6. Design System
-
-forgeHQ currently has no user-facing frontend and therefore no UI design token system.
-Its current design surface is documentation and contract language.
-
-### 6.1 Documentation Style Rules
-
-| Rule | Current posture |
-| --- | --- |
-| Voice | Present tense and declarative |
-| Proposal posture | Explicitly non-authoritative |
-| Structured data | Prefer tables for registries and contracts |
-| Root truth surface | `doc/system/` plus generated `SYSTEM.md` |
-
-### 6.2 Non-Authoritative Language
-
-Allowed language includes:
-
-- propose
-- hypothesize
-- suggest
-- indicate
-- candidate
-- challenge
-
-Prohibited language includes:
-
-- approved
-- confirmed fix
-- proven truth
-- must apply
-- merge now
-
----
-
-## 7. Frontend
-
-forgeHQ currently implements no frontend surface.
-
-### 7.1 Current Status
-
-| Surface | Status |
-| --- | --- |
-| Browser UI | Not implemented |
-| Desktop UI | Not implemented |
-| Operator dashboard | Not implemented in this repo |
-
-### 7.2 Boundary Note
-
-Human review is a downstream concern intended for ForgeCommand-facing surfaces,
-not a current frontend owned by this repository.
-
----
-
 ## 8. API Layer
 
 forgeHQ currently exposes no HTTP or RPC API.
@@ -359,65 +301,15 @@ but no transport contract is part of the current repo truth.
 
 ---
 
-## 9. Backend
-
-*Last updated: 2026-04-04 (Phases 2–6 implemented)*
-
-The backend implements domain-contract modules, typed schema stubs, a strict stage
-router, a no-op orchestrator scaffold, a full Phases 2–6 service layer, in-memory
-persistence stubs, and ForgeCommand read models. No HTTP API or persistence wiring
-to DataForge has been implemented yet.
-
-### 9.1 Current Backend Modules
-
-| Module | Files | Current responsibility |
-| --- | --- | --- |
-| Artifact domain | `app/domain/artifacts/enums.py` | Artifact families, lineage layers, backbone registry |
-| Pipeline domain | `app/domain/pipeline/enums.py` | Stage order, stage artifacts, stage owners |
-| Reviewability domain | `app/domain/reviewability/enums.py` | Reviewability requirements, lifecycle state split, language posture |
-| Signals domain | `app/domain/signals/enums.py` | Source authority classification, admissibility decision |
-| Worker domain | `app/domain/workers/enums.py` | Worker identities and allowed emissions |
-| Schema stubs | `app/schemas/` | Typed artifact and run models for all 8 pipeline stages |
-| Stage router | `app/orchestration/stage_router.py` | Fail-closed stage-order and predecessor validation |
-| No-op orchestrator | `app/orchestration/forgehq_orchestrator.py` | Placeholder artifact emission in strict stage order |
-| Signal intake service | `app/services/signal_intake_service.py` | Source ref admission, authority classification, fail-closed on unknowns |
-| Target ranking service | `app/services/target_ranking_service.py` | Composite score with 2× deterministic weighting, ranking trace |
-| Context bundle service | `app/services/context_bundle_service.py` | Bounded context curation, scope policy enforcement |
-| Candidate design service | `app/services/candidate_design_service.py` | Hypothesis and oracle design, scope locking from bundle |
-| Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
-| Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
-| Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
-| Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
-| Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
-| Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |
-| Lineage repository | `app/persistence/lineage_repository.py` | In-memory directed lineage edge store |
-| Proposal repository | `app/persistence/proposal_repository.py` | In-memory proposal row store with lifecycle/decision separation |
-| ForgeCommand read models | `app/read_models/forgecommand.py` | `ProposalQueueItem`, `ProposalDetailModel`, and 4 layer types |
-| ForgeCommand read model service | `app/services/forgecommand_read_model_service.py` | Assembles queue items and detail models from backbone artifacts |
-
-### 9.2 Pending Backend Slices
-
-| Slice | Status |
-| --- | --- |
-| DataForge persistence wiring | Pending (in-memory stubs in place) |
-| HTTP API surface | Not implemented |
-| ForgeCommand API integration | Not implemented (read models done; API layer pending) |
-
-### 9.3 Backend Law
-
-The orchestrator is a bounded scaffold for placeholder progression.
-Service layer logic is authoritative for Phases 2–6 pipeline semantics.
-Persistence stubs use in-memory storage; DataForge wiring is the next persistence boundary step.
-
----
-
 ## 10. Ecosystem Integration
 
-*Last updated: 2026-04-04 (Phase 6: ForgeCommand read models implemented)*
+*Last updated: 2026-06-10 (producer entrypoint + NeuroForge model-learning edge)*
 
 forgeHQ exists inside a larger BDS ecosystem. Upstream boundaries remain declared-only.
 ForgeCommand now has implemented read models; the wire adapter is pending.
-DataForge persistence uses in-memory stubs; the wire adapter is pending.
+DataForge persistence uses in-memory stubs; the wire adapter is pending. The live
+self-healing drivers (`learning_client`, `context_client`, `context_pack_publisher`,
+`healing_publisher`) call NeuroForge / context-runtime / DataForge-Local directly.
 
 ### 10.1 Boundary Table
 
@@ -426,79 +318,51 @@ DataForge persistence uses in-memory stubs; the wire adapter is pending.
 | ForgeEval | Upstream evidence substrate | Declared boundary; `forgeeval://` scheme admitted by `SignalIntakeService` |
 | ForgeMath | Upstream math/rule authority where adopted | Declared boundary; `forgemath://` scheme admitted by `SignalIntakeService` |
 | DataForge | Downstream persistence, lineage, rollback linkage | In-memory stubs implemented (`ArtifactRegistry`, `LineageRepository`, `ProposalRepository`); wire adapter pending |
-| ForgeCommand | Downstream review surface and operator action state | Read models implemented (`ProposalQueueItem`, `ProposalDetailModel`, `ForgeCommandReadModelService`); HTTP API adapter pending |
+| ForgeCommand | Downstream review surface and operator action state | Read models implemented; **also the producer trigger** — its self-healing tick spawns the `python -m app self-heal` entrypoint and injects the NeuroForge ingest key |
+| NeuroForge | Downstream model-learning ingest (Category-Champion) | `learning_client` POSTs a `CodeFixOutcome` to `POST /api/v1/learning/model-outcome` (service-authenticated; fail-soft side-channel) |
 
 ### 10.2 Integration Laws
 
 - forgeHQ may consume upstream artifacts but may not overwrite upstream truth
 - forgeHQ proposals remain non-authoritative even after packaging
 - operator action state belongs downstream and stays separate from proposal lifecycle state
+- the learning emit is a non-authoritative side-channel: an ingest failure (down/401) is
+  reported, never fatal to the propose path
 
----
+### 10.3 Producer Entrypoint
 
-## 11. Database Schema
+`python -m app self-heal --repo <id> --repo-root <path> --target <file>` (see `app/cli.py`)
+runs one fix end to end via `build_live_runner` — classify → governed context → publish
+pack → generate (NeuroForge ladder, model captured) → pact-verify → emit `CodeFixOutcome`
+→ propose — and prints a structured JSON result for the caller to capture as evidence. It
+reads `NEUROFORGE_API_KEY` from the environment (ForgeCommand injects it at spawn, so the
+secret never lands in a forgeHQ file). Exit codes: `0` ran (emit ok/skipped), `1` hard
+failure (run raised), `3` ran but the learning emit failed (e.g. 401 ingest key).
 
-*Last updated: 2026-04-04 (in-memory persistence stubs implemented)*
+`python -m app self-heal-feed` (feed plan **P4b**) runs the fix loop from *real signals*
+instead of a hand-named target. Input (`--input` file or stdin):
+`{"items":[{source_ref, node, gate_allowed, repo_root}]}` — ForgeCommand's tick reads
+forge-eval evidence-bundle lineage nodes from DataForge-Local, supplies the ForgeMath
+`proposal_candidate_allowed` gate per candidate, and resolves `repo_root` from the registry
+repo-map. `app/services/signal_target_resolver.py` (Tier-A) maps each gated evidence-bundle
+node → one `(repository, target_file, raw_kind)` per evaluated file (`input_contract.target_refs[]`),
+and `app/services/self_healing_feed.py` runs `SelfHealingRunner` per target. Transport-free,
+fail-closed (ungated / no-file / no-repo_root signals are skipped with a recorded reason);
+prints a JSON batch summary (`ran` / `skipped` with reasons). forgeHQ never derives local
+paths — `repo_root` is caller-supplied.
 
-forgeHQ defines no SQL schema, ORM models, or migrations.
-In-memory persistence stubs are implemented for all three persistence surfaces;
-DataForge wire adapters are pending.
-
-### 11.1 Current Persistence Status
-
-| Surface | Status |
-| --- | --- |
-| SQL migrations | Not implemented |
-| ORM models | Not implemented |
-| In-memory artifact registry | Implemented — `app/persistence/artifact_registry.py` (`ArtifactRegistry`) |
-| In-memory lineage edge store | Implemented — `app/persistence/lineage_repository.py` (`LineageRepository`, `LineageEdge`) |
-| In-memory proposal row store | Implemented — `app/persistence/proposal_repository.py` (`ProposalRepository`, `ProposalRow`) |
-| DataForge wire adapter | Not implemented |
-
-### 11.2 In-Memory Persistence Models
-
-The stubs are frozen dataclasses and append-only stores — they define the persistence
-structure that will be wired to DataForge, not SQL tables.
-
-| Class | Module | Structure |
-| --- | --- | --- |
-| `ArtifactRegistry` | `app/persistence/artifact_registry.py` | Dict keyed by `artifact_id`; append-only; raises `ArtifactRegistryError` on duplicate |
-| `LineageEdge` | `app/persistence/lineage_repository.py` | Frozen dataclass: `parent_artifact_id`, `child_artifact_id`, `relationship_type`, `run_id` |
-| `LineageRepository` | `app/persistence/lineage_repository.py` | List of `LineageEdge`; queryable by artifact id |
-| `ProposalRow` | `app/persistence/proposal_repository.py` | Frozen dataclass with separate `proposal_lifecycle_state` and `operator_decision_state` fields |
-| `ProposalRepository` | `app/persistence/proposal_repository.py` | Dict keyed by `proposal_artifact_id`; queryable by run_id |
-
-### 11.3 Future Boundary
-
-When DataForge wiring is added, the in-memory stubs must be replaced with adapters
-that preserve:
-
-- deterministic evidence lineage
-- non-authoritative proposal lineage
-- operator decision linkage (always separate from proposal lifecycle state)
-
----
-
-## 12. AI Integration
-
-forgeHQ currently has no runtime AI inference surface.
-AI usage is limited to AI-assisted software development against the repository documentation stack.
-
-### 12.1 Current AI Surfaces
-
-| Surface | Status |
-| --- | --- |
-| Runtime model invocation | Not implemented |
-| Provider routing | Not implemented |
-| Prompt persistence | Not implemented |
-| Dev-time context loading | Implemented via `CLAUDE.md` and `scripts/context-bundle.sh` |
-
-### 12.2 Current AI Governance
-
-- repo truth is assembled through `doc/system/`
-- root `CLAUDE.md` defines project-specific working rules
-- context bundles select bounded documentation slices for implementation work
-- generated model output does not become canonical upstream truth by itself
+**Tier-B (P4b-2) — downstream lineage walk.** For a seed node that carries no file
+(e.g. a `forge_eval_run` summarising many files), `resolve_via_downstream_walk` walks the
+caller-supplied bounded **downstream** subgraph along allowlisted `ImpactEdge.v1` edge types
+(`produced`, the real `forge_eval_run --produced--> forge_eval_evidence_bundle` edge) to the
+evidence-bundle node(s) that DO carry `(repo, file)`, then delegates each to Tier-A. Downstream-only
+matches DataForge-Local's traversal direction. A Tier-B feed item additionally supplies
+`subgraph_nodes` + `subgraph_edges` and `gate_by_node_id` (the ForgeMath gate per bundle, missing =
+fail-closed); a bundle seed delegates straight to Tier-A. Bounded (`max_hops`/`max_nodes`, cycle-safe)
+and fail-closed: a seed that reaches no bundle is skipped with `no_walk_path` (fully explored) or
+`walk_budget_exhausted` (bound hit first), never a guessed file. Resolved targets are tagged
+`resolution="walked"` for honest provenance. (FC-side wiring of Tier-B subgraphs into its tick is a
+follow-up; today the live tick seeds bundle nodes directly = Tier-A.)
 
 ---
 
@@ -611,6 +475,145 @@ A proposal is reviewable only when all of the following are present:
 
 ---
 
+## 7. Frontend
+
+forgeHQ currently implements no frontend surface.
+
+### 7.1 Current Status
+
+| Surface | Status |
+| --- | --- |
+| Browser UI | Not implemented |
+| Desktop UI | Not implemented |
+| Operator dashboard | Not implemented in this repo |
+
+### 7.2 Boundary Note
+
+Human review is a downstream concern intended for ForgeCommand-facing surfaces,
+not a current frontend owned by this repository.
+
+---
+
+## 9. Backend
+
+*Last updated: 2026-04-04 (Phases 2–6 implemented)*
+
+The backend implements domain-contract modules, typed schema stubs, a strict stage
+router, a no-op orchestrator scaffold, a full Phases 2–6 service layer, in-memory
+persistence stubs, and ForgeCommand read models. No HTTP API or persistence wiring
+to DataForge has been implemented yet.
+
+### 9.1 Current Backend Modules
+
+| Module | Files | Current responsibility |
+| --- | --- | --- |
+| Artifact domain | `app/domain/artifacts/enums.py` | Artifact families, lineage layers, backbone registry |
+| Pipeline domain | `app/domain/pipeline/enums.py` | Stage order, stage artifacts, stage owners |
+| Reviewability domain | `app/domain/reviewability/enums.py` | Reviewability requirements, lifecycle state split, language posture |
+| Signals domain | `app/domain/signals/enums.py` | Source authority classification, admissibility decision |
+| Worker domain | `app/domain/workers/enums.py` | Worker identities and allowed emissions |
+| Schema stubs | `app/schemas/` | Typed artifact and run models for all 8 pipeline stages |
+| Stage router | `app/orchestration/stage_router.py` | Fail-closed stage-order and predecessor validation |
+| No-op orchestrator | `app/orchestration/forgehq_orchestrator.py` | Placeholder artifact emission in strict stage order |
+| Signal intake service | `app/services/signal_intake_service.py` | Source ref admission, authority classification, fail-closed on unknowns |
+| Target ranking service | `app/services/target_ranking_service.py` | Composite score with 2× deterministic weighting, ranking trace |
+| Context bundle service | `app/services/context_bundle_service.py` | Bounded context curation, scope policy enforcement |
+| Candidate design service | `app/services/candidate_design_service.py` | Hypothesis and oracle design, scope locking from bundle |
+| Candidate generation service | `app/services/candidate_generation_service.py` | Patch generation with scope adherence enforcement |
+| Falsification service | `app/services/falsification_service.py` | Independent challenge, downgrade logic, critic lane |
+| Candidate verification service | `app/services/candidate_verification_service.py` | Observed gain + residual weakness, no-green-only posture |
+| Signal→target resolver | `app/services/signal_target_resolver.py` | P4b Tier-A: gated forge-eval evidence-bundle node → concrete `(repository, target_file, raw_kind)`. Tier-B (P4b-2): bounded **downstream** lineage walk from a non-file seed (e.g. `forge_eval_run`) over allowlisted `produced` edges → bundle node(s) → Tier-A. Transport-free, fail-closed |
+| Self-healing feed | `app/services/self_healing_feed.py` | P4b: resolve caller-supplied admitted signals (Tier-A bundle item, or Tier-B item with `subgraph_nodes`/`subgraph_edges`/`gate_by_node_id`) → run `SelfHealingRunner` per target (injectable); per-target error capture |
+| Proposal packaging service | `app/services/proposal_packaging_service.py` | Full backbone packaging, reviewability computation, persistence |
+| Reviewability engine | `app/services/reviewability_engine.py` | Pure 7-condition reviewability function |
+| Artifact registry | `app/persistence/artifact_registry.py` | In-memory append-only artifact store |
+| Lineage repository | `app/persistence/lineage_repository.py` | In-memory directed lineage edge store |
+| Proposal repository | `app/persistence/proposal_repository.py` | In-memory proposal row store with lifecycle/decision separation |
+| ForgeCommand read models | `app/read_models/forgecommand.py` | `ProposalQueueItem`, `ProposalDetailModel`, and 4 layer types |
+| ForgeCommand read model service | `app/services/forgecommand_read_model_service.py` | Assembles queue items and detail models from backbone artifacts |
+
+### 9.2 Pending Backend Slices
+
+| Slice | Status |
+| --- | --- |
+| DataForge persistence wiring | Pending (in-memory stubs in place) |
+| HTTP API surface | Not implemented |
+| ForgeCommand API integration | Not implemented (read models done; API layer pending) |
+
+### 9.3 Backend Law
+
+The orchestrator is a bounded scaffold for placeholder progression.
+Service layer logic is authoritative for Phases 2–6 pipeline semantics.
+Persistence stubs use in-memory storage; DataForge wiring is the next persistence boundary step.
+
+---
+
+## 11. Database Schema
+
+*Last updated: 2026-04-04 (in-memory persistence stubs implemented)*
+
+forgeHQ defines no SQL schema, ORM models, or migrations.
+In-memory persistence stubs are implemented for all three persistence surfaces;
+DataForge wire adapters are pending.
+
+### 11.1 Current Persistence Status
+
+| Surface | Status |
+| --- | --- |
+| SQL migrations | Not implemented |
+| ORM models | Not implemented |
+| In-memory artifact registry | Implemented — `app/persistence/artifact_registry.py` (`ArtifactRegistry`) |
+| In-memory lineage edge store | Implemented — `app/persistence/lineage_repository.py` (`LineageRepository`, `LineageEdge`) |
+| In-memory proposal row store | Implemented — `app/persistence/proposal_repository.py` (`ProposalRepository`, `ProposalRow`) |
+| DataForge wire adapter | Not implemented |
+
+### 11.2 In-Memory Persistence Models
+
+The stubs are frozen dataclasses and append-only stores — they define the persistence
+structure that will be wired to DataForge, not SQL tables.
+
+| Class | Module | Structure |
+| --- | --- | --- |
+| `ArtifactRegistry` | `app/persistence/artifact_registry.py` | Dict keyed by `artifact_id`; append-only; raises `ArtifactRegistryError` on duplicate |
+| `LineageEdge` | `app/persistence/lineage_repository.py` | Frozen dataclass: `parent_artifact_id`, `child_artifact_id`, `relationship_type`, `run_id` |
+| `LineageRepository` | `app/persistence/lineage_repository.py` | List of `LineageEdge`; queryable by artifact id |
+| `ProposalRow` | `app/persistence/proposal_repository.py` | Frozen dataclass with separate `proposal_lifecycle_state` and `operator_decision_state` fields |
+| `ProposalRepository` | `app/persistence/proposal_repository.py` | Dict keyed by `proposal_artifact_id`; queryable by run_id |
+
+### 11.3 Future Boundary
+
+When DataForge wiring is added, the in-memory stubs must be replaced with adapters
+that preserve:
+
+- deterministic evidence lineage
+- non-authoritative proposal lineage
+- operator decision linkage (always separate from proposal lifecycle state)
+
+---
+
+## 12. AI Integration
+
+forgeHQ currently has no runtime AI inference surface.
+AI usage is limited to AI-assisted software development against the repository documentation stack.
+
+### 12.1 Current AI Surfaces
+
+| Surface | Status |
+| --- | --- |
+| Runtime model invocation | Not implemented |
+| Provider routing | Not implemented |
+| Prompt persistence | Not implemented |
+| Dev-time context loading | Implemented via `CLAUDE.md` and `scripts/context-bundle.sh` |
+
+### 12.2 Current AI Governance
+
+- repo truth is assembled through `doc/system/`
+- root `CLAUDE.md` defines project-specific working rules
+- context bundles select bounded documentation slices for implementation work
+- generated model output does not become canonical upstream truth by itself
+
+---
+
 ## 15. Error Handling Contract
 
 *Last updated: 2026-04-04 (Phases 2–6 error classes documented)*
@@ -668,6 +671,142 @@ degrading or returning partial results.
 | Persistence violations | `ArtifactRegistryError` raised on duplicate registration |
 | Bash documentation scripts | Non-zero exit with stderr message |
 | Runtime API errors | Not applicable — no HTTP API exists yet |
+
+---
+
+## 3. Tech Stack
+
+The current repo uses a minimal stack because only the governance contract slice is implemented.
+
+### 3.1 Runtime and Test Stack
+
+| Layer | Current choice | Notes |
+| --- | --- | --- |
+| Language | Python 3.12 | Current local interpreter |
+| Test framework | `pytest==7.4.3` | Repo contract tests |
+| Shell scripting | Bash | Documentation assembly and context-bundle scripts |
+| Docs format | Markdown | Canonical repo-reference format |
+
+### 3.2 Python Standard Library Usage
+
+| Module | Current use |
+| --- | --- |
+| `enum` | `StrEnum` vocabularies for bounded contracts |
+| `dataclasses` | Frozen contract helpers |
+| `types.MappingProxyType` | Immutable registry views |
+
+### 3.3 Not Yet Present
+
+| Category | Current status |
+| --- | --- |
+| Web framework | Not implemented |
+| ORM/migrations | Not implemented |
+| Database driver | Not implemented |
+| Frontend framework | Not implemented |
+| Runtime AI provider SDK | Not implemented |
+
+---
+
+## 6. Design System
+
+forgeHQ currently has no user-facing frontend and therefore no UI design token system.
+Its current design surface is documentation and contract language.
+
+### 6.1 Documentation Style Rules
+
+| Rule | Current posture |
+| --- | --- |
+| Voice | Present tense and declarative |
+| Proposal posture | Explicitly non-authoritative |
+| Structured data | Prefer tables for registries and contracts |
+| Root truth surface | `doc/system/` plus generated `SYSTEM.md` |
+
+### 6.2 Non-Authoritative Language
+
+Allowed language includes:
+
+- propose
+- hypothesize
+- suggest
+- indicate
+- candidate
+- challenge
+
+Prohibited language includes:
+
+- approved
+- confirmed fix
+- proven truth
+- must apply
+- merge now
+
+---
+
+# Scope
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Scope and authority boundary of this documentation system.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Governance
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Ownership, review, and change-authority boundaries.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Change Control
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Change-control workflow, proposal lifecycle, and audit.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+## 5. Configuration & Environment
+
+The current repo does not define service-runtime environment variables because no service runtime is implemented yet.
+One optional QA tooling override is supported for test-runner discovery.
+
+### 5.1 Environment Variables
+
+| Variable | Type | Default | Reader | Status |
+| --- | --- | --- | --- | --- |
+| `PYTEST_RUNNER` | path string | auto-detected | `scripts/qa-mode-a-preflight.sh`, `scripts/qa-regression-smoke.sh` | Optional override for the pytest executable |
+
+### 5.2 Operational Commands
+
+| Command | Purpose |
+| --- | --- |
+| `python3 -m pytest` | Run repo tests when `pytest` is installed locally |
+| `doc/system/BUILD.sh` | Rebuild root `SYSTEM.md` |
+| `scripts/context-bundle.sh --list` | Show selective doc-loading options |
+| `scripts/qa-mode-a-preflight.sh` | Execute Mode A T0 QA checks for current repo maturity |
+| `scripts/qa-regression-smoke.sh` | Run the lightweight regression smoke suite |
+
+### 5.3 Configuration Posture
+
+- Service runtime configuration is intentionally absent until a service slice exists.
+- QA tooling may use `PYTEST_RUNNER` to pin a specific pytest executable while the repo remains environment-light.
+- When service configuration appears later, every variable must be documented here with type, default, and owner.
 
 ---
 
@@ -781,3 +920,32 @@ DataForge wire adapter exists yet.
 - QA protocol compliance for current maturity now lives in the root test plan plus `docs/qa/` support artifacts
 - future slices must update both `docs/` and `doc/system/` when repo truth changes
 - the next phase boundary is Phase 7 (hardening and scale-out); prior to that, DataForge wiring and HTTP API surface are the natural next integration points
+
+---
+
+# Structure
+
+**Document version:** 1.0 (bootstrap scaffold)
+
+Module/chapter layout and cross-reference rules.
+
+> This chapter is a registry-generated bootstrap scaffold for a
+> `documentation` class documentation system. Replace this placeholder with
+> real authored content. Registry will not invent repo truth that is not
+> already present in the repo.
+
+---
+
+# Appendices
+
+**Document version:** 1.0 (carry-forward)
+
+Appendices, glossary, and cross-references.
+
+## Unmapped legacy chapters
+
+The following legacy chapters were carried forward but could not be
+deterministically mapped to a class-aware slot. Review and place them by
+hand:
+
+- `forgeHQ — Complete System Reference`

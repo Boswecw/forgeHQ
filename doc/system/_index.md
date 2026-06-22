@@ -1,47 +1,57 @@
-# forgeHQ — System Documentation
+        # forgeHQ - Compiled System Reference
 
-**Document version:** 1.1 (2026-06-08) — full chapter set indexed
-**Protocol:** Forge Documentation Protocol v1
-**Documentation structure class:** `documentation`
+        **Designation:** FRG
+        **Document role:** Canonical compiled technical reference for forgeHQ
+        **Source:** `doc/system/`
+        **Build command:** `bash doc/system/BUILD.sh`
+        **Document version:** 2.0 (2026-06-22) - canonical compliance migration
+        **Protocol:** BDS Documentation Protocol v2.0; BDS Repo Documentation System Canonical Compliance Standard
 
-This `doc/system/` tree is the canonical source of truth for forgeHQ.
-Chapters are assembled into a designation-bound canonical artifact.
+        > **Generated artifact warning:** `doc/FRGSYSTEM.md` is assembled output. Edit
+        > the source modules under `doc/system/` and rebuild. Hand edits to the
+        > compiled artifact are overwritten by the next build.
 
-Assembly contract:
+        Assembly contract:
 
-- Command: `bash doc/system/BUILD.sh`
-- Validation: `bash doc/system/validate_snapshots.sh` runs during assembly
-- Primary output: `doc/FRGSYSTEM.md`
+        - Command: `bash doc/system/BUILD.sh`
+        - Validation: `bash doc/system/validate_snapshots.sh` runs during assembly
+        - Primary output: `doc/FRGSYSTEM.md`
 
-## Table of Contents
+        This `doc/system/` tree is the canonical source of truth for forgeHQ. It uses
+        explicit **truth classes**: canonical facts define repo role, authority
+        boundaries, contract behavior, runtime behavior, and verification doctrine;
+        snapshot facts are dated, audit-derived counts and current implementation
+        inventory that may drift between audits.
 
-0. [Overview](00-overview.md)
-1. [Architecture](01-architecture.md)
-1. [Overview Philosophy](01-overview-philosophy.md)
-2. [Architecture](02-architecture.md)
-3. [Tech Stack](03-tech-stack.md)
-4. [Project Structure](04-project-structure.md)
-5. [Configuration](05-configuration.md)
-6. [Design System](06-design-system.md)
-7. [Frontend](07-frontend.md)
-8. [Api Layer](08-api-layer.md)
-9. [Backend](09-backend.md)
-10. [Ecosystem Integration](10-ecosystem-integration.md)
-10. [Scope](10-scope.md)
-11. [Database Schema](11-database-schema.md)
-12. [AI Integration](12-ai-integration.md)
-13. [Proposal Artifact Model](13-proposal-artifact-model.md)
-14. [Pipeline Reviewability](14-pipeline-reviewability.md)
-15. [Error Handling](15-error-handling.md)
-16. [Testing Infrastructure](16-testing-infrastructure.md)
-17. [Handover Migration Notes](17-handover-migration-notes.md)
-20. [Structure](20-structure.md)
-30. [Governance](30-governance.md)
-40. [Change Control](40-change-control.md)
-90. [Appendices](90-appendices.md)
+        | Part | File | Contents |
+        | --- | --- | --- |
+        | §1 | `00_overview/00-overview.md` | Overview |
+| §2 | `00_overview/01-architecture.md` | Architecture |
+| §3 | `00_overview/01-overview-philosophy.md` | 1. Overview & Philosophy |
+| §4 | `00_overview/02-architecture.md` | 2. Architecture |
+| §5 | `00_overview/04-project-structure.md` | 4. Project Structure |
+| §6 | `10_service-contract/08-api-layer.md` | 8. API Layer |
+| §7 | `10_service-contract/10-ecosystem-integration.md` | 10. Ecosystem Integration |
+| §8 | `10_service-contract/13-proposal-artifact-model.md` | 13. Proposal Artifact Model |
+| §9 | `10_service-contract/14-pipeline-reviewability.md` | 14. Pipeline & Reviewability |
+| §10 | `20_runtime/07-frontend.md` | 7. Frontend |
+| §11 | `20_runtime/09-backend.md` | 9. Backend |
+| §12 | `20_runtime/11-database-schema.md` | 11. Database Schema |
+| §13 | `20_runtime/12-ai-integration.md` | 12. AI Integration |
+| §14 | `20_runtime/15-error-handling.md` | 15. Error Handling Contract |
+| §15 | `30_dependencies/03-tech-stack.md` | 3. Tech Stack |
+| §16 | `30_dependencies/06-design-system.md` | 6. Design System |
+| §17 | `40_governance/10-scope.md` | Scope |
+| §18 | `40_governance/30-governance.md` | Governance |
+| §19 | `40_governance/40-change-control.md` | Change Control |
+| §20 | `50_operations/05-configuration.md` | 5. Configuration & Environment |
+| §21 | `50_operations/16-testing-infrastructure.md` | 16. Testing Infrastructure |
+| §22 | `50_operations/17-handover-migration-notes.md` | 17. Handover / Migration Notes |
+| §23 | `99_appendices/20-structure.md` | Structure |
+| §24 | `99_appendices/90-appendices.md` | Appendices |
 
-## Quick Assembly
+        ## Quick Assembly
 
-```bash
-bash doc/system/BUILD.sh
-```
+        ```bash
+        bash doc/system/BUILD.sh
+        ```
