@@ -1,5 +1,7 @@
 # Overview
 
+> **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).** forgeHQ is a business-side proposal-and-evaluation surface in the Forge ecosystem backend (`ecosystem/local-systems`); it proposes and evaluates candidates and does not mint canonical truth.
+
 **Document version:** 1.0 (bootstrap scaffold)
 
 System identity, role, and boundary with the rest of the Forge ecosystem.
