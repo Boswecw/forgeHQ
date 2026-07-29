@@ -59,6 +59,8 @@ bash doc/system/BUILD.sh
 
 # §1 — Overview & Philosophy
 
+> **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).** forgeHQ is a business-side proposal-and-evaluation surface in the Forge ecosystem backend (`ecosystem/local-systems`); it proposes and evaluates candidates and does not mint canonical truth.
+
 *Last updated: 2026-04-04 (Phase 6: ForgeCommand read models and read model service added)*
 
 forgeHQ is a backend/domain-contract repository for bounded proposal generation.
