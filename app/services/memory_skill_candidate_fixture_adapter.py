@@ -25,6 +25,7 @@ FCC_SOURCE_COMMIT = "a04c63cf5c6359237efc75410b3db122465b6e8b"
 FAMILY = "memory_skill_candidate"
 SCHEMA_VERSION = "forge.memory_skill_candidate.v1"
 _REF = re.compile(r"^[a-z0-9_]+:[^:]+:v[0-9]+$")
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _WEIGHTS = frozenset({"decisive", "contributing", "background"})
 
 
@@ -162,6 +163,28 @@ def _validate(
     if artifact["validation_status"] != "valid":
         _refuse("fixture candidate must carry validation_status=valid")
     _uuid(artifact["artifact_id"], "artifact_id")
+    _uuid(artifact["lineage_root_id"], "lineage_root_id")
+    parent_artifact_id = artifact["parent_artifact_id"]
+    if parent_artifact_id is not None:
+        _uuid(parent_artifact_id, "parent_artifact_id")
+    _bounded_text(artifact["trace_id"], "trace_id", 256)
+    idempotency_key = _bounded_text(
+        artifact["idempotency_key"], "idempotency_key", 64
+    )
+    if not _HEX64.fullmatch(idempotency_key):
+        _refuse("idempotency_key must be 64 lowercase hexadecimal characters")
+    created_at = _timestamp(artifact["created_at"], "created_at")
+    recorded_at = _timestamp(artifact["recorded_at"], "recorded_at")
+    if recorded_at < created_at:
+        _refuse("recorded_at must not precede created_at")
+    if artifact["sensitivity_class"] != "internal":
+        _refuse("fixture candidate sensitivity_class must be internal")
+    if artifact["visibility_class"] != "operator":
+        _refuse("fixture candidate visibility_class must be operator")
+    signer = _bounded_text(artifact["signer_identity"], "signer_identity", 256)
+    if not signer.startswith("forge-memory/consolidation"):
+        _refuse("signer_identity must name forge-memory/consolidation")
+    _bounded_text(artifact["signature"], "signature", 1024)
 
     payload = _mapping(artifact["payload"], "payload")
     _exact_keys(
