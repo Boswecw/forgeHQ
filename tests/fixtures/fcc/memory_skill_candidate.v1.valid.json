@@ -1,0 +1,74 @@
+{
+  "_fixture": {
+    "family": "memory_skill_candidate",
+    "version": 1,
+    "class": "valid",
+    "description": "Three independent successes across two consumers, with one override recorded rather than netted off. Names the memory by reference only, and carries no approval, verdict, or authority."
+  },
+  "artifact_id": "c0000000-0000-4000-8000-000000000001",
+  "artifact_family": "memory_skill_candidate",
+  "artifact_version": 1,
+  "produced_by_system": "forge-memory",
+  "produced_by_component": "consolidation",
+  "source_scope": "local",
+  "lineage_root_id": "c0000000-0000-4000-8000-000000000001",
+  "parent_artifact_id": null,
+  "trace_id": "trace-fmem-cand-valid-0001",
+  "idempotency_key": "0000000000000000000000000000000000000000000000000000000000000c01",
+  "created_at": "2026-08-22T09:15:00Z",
+  "recorded_at": "2026-08-22T09:15:00Z",
+  "sensitivity_class": "internal",
+  "visibility_class": "operator",
+  "promotion_class": "local_only",
+  "validation_status": "valid",
+  "signer_identity": "forge-memory/consolidation@fmem",
+  "signature": "sha256:fixture-signature-placeholder-memory-skill-candidate-valid-0001",
+  "payload": {
+    "schema_version": "forge.memory_skill_candidate.v1",
+    "skill_candidate_id": "c1f2a3b4-0001-4000-8000-000000000001",
+    "proposed_at": "2026-08-22T09:15:00Z",
+    "scope": {
+      "tenant_id": "bds",
+      "user_id": null,
+      "project_id": "forge",
+      "repo_id": null
+    },
+    "subject": {
+      "artifact_ref": "memory_fact:a7c1a2d8-0f3b-4a91-9c22-6d0e5b8a1c34:v1",
+      "memory_id": "fact-contract-authority"
+    },
+    "policy_applied": {
+      "min_independent_successes": 2,
+      "min_distinct_consumers": 1
+    },
+    "evidence": [
+      {
+        "use_receipt_ref": "u-01",
+        "retrieval_receipt_ref": "rr-01",
+        "consumer": "ForgeAgents/agents.reference.developer",
+        "decision_ref": "dec-101",
+        "causal_weight": "decisive"
+      },
+      {
+        "use_receipt_ref": "u-02",
+        "retrieval_receipt_ref": "rr-02",
+        "consumer": "ForgeAgents/agents.reference.reviewer",
+        "decision_ref": "dec-102",
+        "causal_weight": "contributing"
+      },
+      {
+        "use_receipt_ref": "u-03",
+        "retrieval_receipt_ref": "rr-03",
+        "consumer": "ForgeAgents/agents.reference.developer",
+        "decision_ref": null,
+        "causal_weight": "background"
+      }
+    ],
+    "counts": {
+      "independent_successes": 3,
+      "distinct_consumers": 2,
+      "overrides_recorded": 1
+    },
+    "consolidation_ref": "consolidation:run-2026-0822-01"
+  }
+}
