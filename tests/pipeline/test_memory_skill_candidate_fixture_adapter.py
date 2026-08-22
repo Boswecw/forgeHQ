@@ -103,6 +103,25 @@ def test_wrong_envelope_identity_or_local_only_posture_is_refused(field, value):
         adapt(value_under_test)
 
 
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("lineage_root_id", "not-a-uuid"),
+        ("idempotency_key", "0" * 63),
+        ("created_at", "yesterday"),
+        ("recorded_at", "2026-08-22T09:14:59Z"),
+        ("sensitivity_class", "restricted"),
+        ("visibility_class", "internal"),
+        ("signer_identity", "somebody-else"),
+    ],
+)
+def test_malformed_envelope_provenance_is_refused(field, value):
+    value_under_test = candidate()
+    value_under_test[field] = value
+    with pytest.raises(MemorySkillCandidateFixtureError):
+        adapt(value_under_test)
+
+
 def test_extra_contract_field_is_refused():
     value = candidate()
     value["payload"]["verdict"] = "yes"
